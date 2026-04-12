@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>ITSM Painter</title>
+        <link rel="stylesheet" type="text/css" href="popup.css"/>
+    </head>
+    <body>
+        <div id="itsm-painter-info-modal-background">
+            <div class="itsm-painter-info-modal">
+                <span>Для добавления пространста, необходимо находиться на странице с домином содежащий в себе itsm.mos.ru</span>
+                <button id="closeInfoModal" class="itsm-painter-btn">Ок</button>
+            </div>
+        </div>
+
+        <div class="itsm-painter-header">
+            <div class="itsm-painter-title-container">
+                <div class="itsm-painter-logo-container">
+                    <img src="../icons/logo/128.png"/>
+                </div>
+                <div class="itsm-painter-title">ITSM Painter</div>
+            </div>
+            <div id="itsm-painter-info-modal-switch-btn" class="itsm-painter-info-logo-container">
+                <img src="../icons/Info.svg"/>
+                <input id="itsm-painter-info-modal-state" type="checkbox"/>
+            </div>
+        </div>
+        <div class="itsm-painter-delimiter"></div>
+        <div id="spacesContainer" class="itsm-painter-spaces-container"></div>
+        <div class="itsm-painter-delimiter"></div>
+
+        <div class="itsm-painter-btns-container">
+            <div id="itsm-painter-space-handler-btn-container"></div>
+            <button id="importConfig" class="itsm-painter-btn">Импорт</button>
+            <button id="exportConfig" class="itsm-painter-btn">Экспорт</button>
+        </div>
+        
+        <script src="popup.js"></script>
+    </body>
+</html>

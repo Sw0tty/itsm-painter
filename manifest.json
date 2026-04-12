@@ -1,0 +1,20 @@
+{
+    "name": "ITSM Painter",
+    "description": "Настраивайте цвета для команд, задавайте напоминания для задач, меняйте оформление.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "icons": {
+        "128": "src/icons/logo/128.png"
+    },
+    "action": {
+        "default_popup": "./src/popup/popup.html"
+    },
+    "permissions": ["tabs", "activeTab", "storage"],
+    "background":{},
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "js": ["./src/itsm-painter.js"]
+        }
+    ]
+}

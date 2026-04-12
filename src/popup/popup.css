@@ -1,0 +1,222 @@
+:root {
+    --titleSurface: #bbccf4;
+    --bodySurface: #ffffff;
+    --titleColor: #0d2a47;
+}
+
+body {
+    display: flex;
+    margin: 3px;
+    flex-direction: column;
+    width: 290px;
+    max-height: 300px;
+    min-height: 300px;
+    /* background: linear-gradient(0deg, #ffffff 20%, #d4eaff ); */
+    background: var(--bodySurface);
+}
+
+.itsm-painter-spaces-container {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    row-gap: 3px;
+    align-items: center;
+    flex: 1 0 0%;
+}
+
+.itsm-painter-space-handlers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.itsm-painter-space {
+    font-size: 13px;
+    color: black;
+}
+
+.itsm-painter-header {
+    display: flex;
+    justify-content: space-between;
+    background: linear-gradient(180deg, var(--titleSurface), transparent);
+    border-radius: 8px 8px 0px 0px;
+    padding: 8px;
+}
+
+.itsm-painter-title-container {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+}
+
+.itsm-painter-title {
+    color: var(--titleColor);
+    font-size: 20px;
+    font-weight: bold;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    user-select: none;
+}
+
+.itsm-painter-logo-container {
+    padding: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 5px;
+    width: 28px;
+    height: 28px;
+    overflow: hidden;
+}
+
+.itsm-painter-logo-container > img {
+    width: 25px;
+    height: 25px;
+    user-select: none;
+    pointer-events: none;
+}
+
+.itsm-painter-delimiter {
+    margin: 5px 20px;
+    border-bottom: 1px solid #8d8d8d;
+}
+
+.itsm-painter-btn {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    text-wrap: nowrap;
+    user-select: none;
+}
+
+.itsm-painter-btn:hover {
+    background: #cbd5e1;
+}
+
+.itsm-painter-delete-btn:hover {
+    color: #ec2525;
+}
+
+.itsm-painter-space-container {
+    width: 100%;
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+
+}
+
+.itsm-painter-remove-space-btn {
+    position: absolute;
+    right: 5px;
+    z-index: 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.itsm-painter-remove-space-btn img {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+    -webkit-mask-image: url("../icons/Delete.svg");
+    mask-image: url("../icons/Delete.svg");
+    background-color: red;
+	mask-position: center;
+	display: block;
+	user-select: none;
+	mask-size: 95%;
+}
+
+.itsm-painter-remove-icon {
+    width: 18px;
+    height: 18px;
+    
+    
+    fill: #ec2525;
+    
+}
+
+.itsm-painter-space-container:hover > .itsm-painter-space {
+    width: 85%;
+}
+
+.itsm-painter-space {
+    z-index: 1;
+    border: 1px solid #979797;
+    border-radius: 5px;
+    background: #ffffff;
+    padding: 2px 5px;
+    width: 100%;
+    transition: width 0.3s ease-in-out;
+}
+
+.itsm-painter-info-logo-container {
+    cursor: pointer;
+}
+
+.itsm-painter-info-logo-container > img {
+    width: 20px;
+    height: 20px;
+    user-select: none;
+}
+
+.itsm-painter-empty-spaces-caption {
+    color: rgb(206, 206, 206);
+    font-weight: bold;
+    font-size: 14px;
+    width: 200px;
+    text-align: center;
+    font-family: monospace;
+    margin: auto;
+    user-select: none;
+}
+
+.itsm-painter-btns-container {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+#itsm-painter-info-modal-state {
+    display: none;
+}
+
+#itsm-painter-info-modal-background {
+    display: none;
+    position: absolute;
+    background: #000000d7;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+}
+
+.itsm-painter-info-modal {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    color: var(--titleColor);
+    font-size: 20px;
+    font-weight: bold;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    width: 200px;
+    text-align: center;
+    font-size: 16px;
+    row-gap: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --titleSurface: #3f6fe1;
+        --bodySurface: #282828;
+        --titleColor: #e4e4e4;
+    }
+
+    .itsm-painter-info-logo-container > img {
+        filter: invert(1);
+    }
+}
