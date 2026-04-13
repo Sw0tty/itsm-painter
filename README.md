@@ -10,6 +10,12 @@ To add a space, it must be located in a domain containing 'itsm.mos.ru '. If the
 ### Team visualization
 Clicking on the palette icon will open a settings window where you can add, edit, and delete commands. When you click on the add command button, you must enter the exact name of the team and the desired color. After saving, you will be able to hide, edit, and delete the command.
 
+### Export configuration
+When opening the extension's context window, you can export all the settings, which include the configured commands and spaces.
+
+### Import configuration
+When importing the configuration, only unique spaces and commands will be added.
+
 ### Addons
 The extension allows you to turn on the dark theme and set a reminder for completing tasks. When you turn on the reminder, a running line will appear for each task with a display of the remaining time to complete the task. The status has a standard urgency scheme and has an update interval every 10 minutes.
 
@@ -23,6 +29,12 @@ The extension allows you to turn on the dark theme and set a reminder for comple
 
 ### Визуализация команды
 При нажатии на кнопку с иконкой палитры откроется окно с настройками, где можно добавлять, редактировать и удалять команды. При нажатии на кнопку добавления команды необходимо ввести точное наименование команды и желаемый цвет. После сохранения будет доступна функция скрытия, редактирования и удаления команды.
+
+### Экспорт конфигурации
+При открытии главного окна расширения можно выполнить экспорт всех настроек, которые включают в себя настроенные команды и пространства
+
+### Импорт конфигурации
+При импорте конфигурации будут добавлены только уникальные пространства и команды
 
 ### Дополнительные функции
 Расширение позволяет включить темную тему и задать напоминание на выполнение задач. При включении напоминания, у каждой задачи появится бегущая строка с отображение оставшегося времени на исполненение задачи. Статус имеет цветовую схему срочности и имеет интервал обновления каждые 10 минут.
