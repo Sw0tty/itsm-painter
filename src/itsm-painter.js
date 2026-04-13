@@ -4,7 +4,9 @@ const ITSMPainterConsts = {
     itsmButtonsMenuContainer: document.getElementById("nav-primary")?.getElementsByClassName("console_buttons")[0],
     shortFormatTasksContainer: () => { return document.getElementsByClassName('grid-container')[0] },
     fullFormatTasksContainer: () => { return document.getElementById('view_list_container')?.querySelector('div') },
-    tasksContainerObserver: undefined
+    tasksContainerObserver: undefined,
+    updateTasksObserverIntervalId: undefined,
+    updateInterval: 60000 * 10
 }
 
 const getITSMPainterSettings = async () => {
@@ -32,7 +34,7 @@ const saveTeam = async (teamId, name, color) => {
         existingTeam.name = name;
         existingTeam.color = color;
     } else {
-        itsmPainterSettings.teams.push({ id: teamId, name: name, color: color});
+        itsmPainterSettings.teams.push({ id: teamId, name: name, color: color, hidden: false });
     }
     saveITSMPainterSettings(itsmPainterSettings);
 }
@@ -40,6 +42,13 @@ const saveTeam = async (teamId, name, color) => {
 const deleteTeam = async (id) => {
     const itsmPainterSettings = await getITSMPainterSettings();
     itsmPainterSettings.teams = itsmPainterSettings.teams.filter(el => el.id != id);
+    saveITSMPainterSettings(itsmPainterSettings);
+}
+
+const hideTeam = async (teamId) => {
+    const itsmPainterSettings = await getITSMPainterSettings();
+    const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
+    existingTeam.hidden = !existingTeam?.hidden;
     saveITSMPainterSettings(itsmPainterSettings);
 }
 
@@ -56,11 +65,15 @@ const switchDarkMode = async () => {
 }
 
 const addTasksContainerObserver = () => {
+    const intervalId = window.setInterval(() => {
+        checkDatagridElementsTarget();
+    }, ITSMPainterConsts.updateInterval);
     const tasksContainer = new MutationObserver(() => {
         checkDatagridElementsTarget();
     });
     tasksContainer.observe(ITSMPainterConsts?.shortFormatTasksContainer() ?? ITSMPainterConsts?.fullFormatTasksContainer(), { childList: true });
     ITSMPainterConsts.tasksContainerObserver = tasksContainer;
+    ITSMPainterConsts.updateTasksObserverIntervalId = intervalId;
 }
 
 const addIdsForFullStyle = async () => {
@@ -72,7 +85,7 @@ const addIdsForFullStyle = async () => {
 }
 
 const renderTeamsList = async () => {
-    document.getElementById('itsm-painter-teams-container').innerHTML = (await getITSMPainterTeams())?.map(el => { return getTeamComponent(el.id, el.name, el.color) }).join('');
+    document.getElementById('itsm-painter-teams-container').innerHTML = (await getITSMPainterTeams())?.map(el => { return getTeamComponent(el.id, el.name, el.color, el?.hidden) }).join('');
 
     (await getITSMPainterTeams())?.forEach(el => {
         document.getElementById(`edit-${el.id}`).addEventListener('click', () => {
@@ -81,8 +94,8 @@ const renderTeamsList = async () => {
 
                 <div class="itsm-painter-team-setting-handlers-container">
                     <input id="color-${el.id}" class="itsm-painter-color-picker" type="color" value="${el.color}" />
-                    <button id="save-${el.id}" class="itsm-painter-btn">Save</button>
-                    <button id="cancel-${el.id}" class="itsm-painter-btn">Cancel</button>
+                    <button id="save-${el.id}" class="itsm-painter-btn">Сохранить</button>
+                    <button id="cancel-${el.id}" class="itsm-painter-btn">Отменить</button>
                 </div>`;
 
                 addSaveCancelListeners(el.id);
@@ -90,7 +103,7 @@ const renderTeamsList = async () => {
 
         document.getElementById(`color-picker-${el.id}`).addEventListener('click', async () => {
             navigator.clipboard.writeText((await getITSMPainterTeams()).find(team => team.id === el.id).color);
-        })
+        });
 
         document.getElementById(`delete-${el.id}`).addEventListener('click', () => {
             deleteTeam(el.id).then(() => {
@@ -98,8 +111,14 @@ const renderTeamsList = async () => {
                 updateStylesSet();
             });
         });
+
+        document.getElementById(`hide-team-${el.id}`).addEventListener('click', () => {
+            hideTeam(el.id).then(() => {
+                renderTeamsList();
+                updateStylesSet();
+            });
+        });
     });
-    
 }
 
 const addSaveCancelListeners = (teamId, isNew) => {
@@ -124,13 +143,21 @@ const addSaveCancelListeners = (teamId, isNew) => {
     });
 }
 
-const getTeamComponent = (teamId, name, color) => {
+const getTeamComponent = (teamId, name, color, hidden) => {
     return `<div id="team-${teamId}" class="itsm-painter-team-setting">
-        <span title="${name}" class="itsm-painter-team-name">${name}</span>
+
+        <div class="itsm-painter-settings-team-name-container">
+            <div id="hide-team-${teamId}" class="itsm-painter-settings-team-show-state">
+                <img src="${chrome.runtime.getURL(`src/icons/${hidden ? 'Hidden' : 'Show'}.svg`)}" />
+            </div>
+            <span title="${name}" class="itsm-painter-team-name">${name}</span>
+        </div>
+
+        
         <div class="itsm-painter-team-setting-handlers-container">
             <div id="color-picker-${teamId}" title="Скопировать цвет" class="itsm-painter-team-setting-color-container" style="background-color: ${color};"></div>
-            <button id="edit-${teamId}" class="itsm-painter-btn">Edit</button>
-            <button id="delete-${teamId}" class="itsm-painter-btn itsm-painter-delete-btn">Delete</button>
+            <button id="edit-${teamId}" class="itsm-painter-btn">Изменить</button>
+            <button id="delete-${teamId}" class="itsm-painter-btn itsm-painter-delete-btn">Удалить</button>
         </div>
     </div>`;
 }
@@ -196,7 +223,7 @@ const getStylesSet = async () => {
             background: var(--color-surface-neutral);
         }
 
-        .welcome-homepage.with-rings-background img {
+        .welcome-homepage.with-rings-background img, .itsm-painter-settings-team-show-state img {
             filter: invert(1);
         }
         
@@ -304,8 +331,25 @@ const getStylesSet = async () => {
             column-gap: 10px;
         }
         
+        .itsm-painter-settings-team-show-state {
+            cursor: pointer;
+        }
+        
+        .itsm-painter-settings-team-show-state img {
+            width: 18px;
+            height: 18px;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .itsm-painter-settings-team-name-container {
+            display: flex;
+            column-gap: 5px;
+            overflow: hidden;
+        }
+        
         .itsm-painter-teams-colors-settings-container {
-            width: 350px;
+            width: 380px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -425,6 +469,7 @@ const getStylesSet = async () => {
         ${(await Promise.all(
             (await getITSMPainterTeams()).map(async el => { return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
             background: ${(await getITSMPainterSettings()).addons.darkMode ? `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%)` : `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%)`};
+            ${el?.hidden ? 'display: none;' : ''}
         }` })
         )).join("\n\n")}
     `;
@@ -442,8 +487,8 @@ const addITSMPainterHandlers = async () => {
             <input id="name-${teamId}" class="itsm-painter-textbox" type="text" />
             <div class="itsm-painter-team-setting-handlers-container">
                 <input id="color-${teamId}" class="itsm-painter-color-picker" type="color" />
-                <button id="save-${teamId}" class="itsm-painter-btn">Save</button>
-                <button id="cancel-${teamId}" class="itsm-painter-btn">Cancel</button>
+                <button id="save-${teamId}" class="itsm-painter-btn">Сохранить</button>
+                <button id="cancel-${teamId}" class="itsm-painter-btn">Отменить</button>
             </div>
         </div>`);
         document.getElementById('itsm-painter-teams-container').insertBefore(newTeamComponentNode, null);
@@ -457,19 +502,17 @@ const addITSMPainterHandlers = async () => {
                 checkDatagridElementsTarget();
                 addTasksContainerObserver();
             } else {
+                window.clearInterval(ITSMPainterConsts.updateTasksObserverIntervalId);
                 ITSMPainterConsts.tasksContainerObserver.disconnect();
                 ITSMPainterConsts.tasksContainerObserver = undefined;
                 removeHotStatuses();
             }
         });
-
-        
     });
 
     document.getElementById('itsm-painter-dark-mode-state').addEventListener('click', () => {
         switchDarkMode().then(() => updateStylesSet());
     });
-
 };
 
 const checkDatagridElementsTarget = () => {
@@ -532,7 +575,7 @@ const ITSMPainterBtnHandler = async () => {
             <div id="itsm-painter-settings-container">
                 <div class="itsm-painter-teams-colors-settings-container">
                     <div id="itsm-painter-teams-container"></div>
-                    <button id="itsm-painter-add-team-btn" class="itsm-painter-btn">Add team</button>
+                    <button id="itsm-painter-add-team-btn" class="itsm-painter-btn">Добавить команду</button>
                 </div>
                 <div class="itsm-painter-vertical-separator"></div>
                 <div class="itsm-painter-addons-container">
@@ -573,7 +616,6 @@ const startExtensionJob = async () => {
 
         if (ITSMPainterConsts?.fullFormatTasksContainer) {
             addIdsForFullStyle();
-            
         }
 
         if ((await getITSMPainterSettings()).addons.keepRemind) {

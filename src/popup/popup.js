@@ -97,12 +97,13 @@ const addConstListeners = () => {
             multiple: false
         });
 
-        const file = await fileHandle.getFile()
-        const fileContent = await file.text()
+        const file = await fileHandle.getFile();
+        const fileContent = await file.text();
 
         try {
             const { teams, spaces } = JSON.parse(fileContent);
             const settings = await getITSMPainterSettings();
+            let uniqueId = 0;
 
             for (let space of spaces) {
                 if (!settings.spaces.includes(space)) {
@@ -115,16 +116,17 @@ const addConstListeners = () => {
                 const existingTeam = settings.teams.find(el => el.name === name);
 
                 if (!existingTeam) {
-                    settings.teams.push({id: new Date().getTime(), color: color, name: name})
+                    settings.teams.push({id: new Date().getTime() + uniqueId++, color: color, name: name})
                 }
             }
 
             saveITSMPainterSettings(settings).then(() => {
                 renderSpaces();
+                chrome.tabs.reload();
             });
         }
         catch {
-            console.error("Unexpected file data")
+            console.error("Unexpected file data");
         }
     });
 
@@ -133,8 +135,8 @@ const addConstListeners = () => {
             suggestedName: 'ITSMPainter-config.json',
             acceptedTypes: ['.json'],
             startIn: "downloads"
-        })
-        const writableStream = await fileHandle.createWritable()
+        });
+        const writableStream = await fileHandle.createWritable();
 
         await writableStream.write(JSON.stringify(await getITSMPainterSettings()));
         await writableStream.close();
