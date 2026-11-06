@@ -317,7 +317,6 @@ const getStylesSet = async () => {
 
         .itsm-painter-textbox {
             border: 1px solid var(--color-border-surface);
-            height: 20px;
             border-radius: 3px;
             padding: 0 3px;
         }
@@ -365,10 +364,16 @@ const getStylesSet = async () => {
         }
         
         .itsm-painter-teams-colors-settings-container {
-            width: 410px;
+            width: 430px;
             height: 100%;
             display: flex;
             flex-direction: column;
+        }
+
+        .itsm-painter-settings-container-teams-actions {
+            display: flex;
+            flex-direction: column;
+            row-gap: 3px;
         }
 
         #itsm-painter-teams-container {
@@ -378,6 +383,7 @@ const getStylesSet = async () => {
             display: flex;
             flex-direction: column;
             row-gap: 5px;
+            padding: 5px 0px;
         }
 
         .itsm-painter-color-picker::-webkit-color-swatch-wrapper {
@@ -515,7 +521,25 @@ const addITSMPainterHandlers = async () => {
         document.getElementById('itsm-painter-teams-container').insertBefore(newTeamComponentNode, null);
         
         addSaveCancelListeners(teamId);
-    })
+    });
+
+    document.getElementById('itsm-painter-auto-add-team-btn').addEventListener('click', async () => {
+        const uniqueTeamsFromITSM = new Set([...document.querySelectorAll('.grid-row > .cell-team > span')].map(el => el.textContent));
+        const itsmPainterSettings = await getITSMPainterSettings();
+        const existingTeams = new Set(itsmPainterSettings.teams.map(el => el.name));
+        const teamsDiff = uniqueTeamsFromITSM.difference(existingTeams);
+        
+        if (teamsDiff.size > 0) {
+            let idDiff = 0;
+            for (let teamName of uniqueTeamsFromITSM.difference(existingTeams)) {
+                itsmPainterSettings.teams.push({ id: new Date().getTime() + idDiff++, name: teamName, color: getRandomHexColor(), hidden: false });
+            }
+            saveITSMPainterSettings(itsmPainterSettings).then(() => {
+                renderTeamsList();
+                updateStylesSet();
+            });
+        }
+    });
 
     document.getElementById('itsm-painter-reminder-state').addEventListener('click', async () => {
         switchRemind().then(async () => {
@@ -596,7 +620,10 @@ const ITSMPainterBtnHandler = async () => {
             <div id="itsm-painter-settings-container">
                 <div class="itsm-painter-teams-colors-settings-container">
                     <div id="itsm-painter-teams-container"></div>
-                    <button id="itsm-painter-add-team-btn" class="itsm-painter-btn">Добавить команду</button>
+                    <div class="itsm-painter-settings-container-teams-actions">
+                        <button id="itsm-painter-add-team-btn" class="itsm-painter-btn">Добавить команду</button>
+                        <button id="itsm-painter-auto-add-team-btn" class="itsm-painter-btn">Автоматическое определение</button>
+                    </div>
                 </div>
                 <div class="itsm-painter-vertical-separator"></div>
                 <div class="itsm-painter-addons-container">
