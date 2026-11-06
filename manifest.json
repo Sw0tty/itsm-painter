@@ -19,7 +19,7 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": ["src/icons/Show.svg", "src/icons/Hidden.svg"],
+            "resources": ["src/icons/Show.svg", "src/icons/Hidden.svg", "src/icons/Random.svg"],
             "matches": ["<all_urls>"],
             "use_dynamic_url": true
         }

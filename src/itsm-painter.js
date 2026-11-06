@@ -23,6 +23,11 @@ const getITSMPainterTeams = async () => {
     return (await getITSMPainterSettings())?.teams;
 }
 
+const getRandomHexColor = () => {
+    const randomNum = Math.floor(Math.random() * 16777215);
+    return '#' + randomNum.toString(16).padStart(6, '0');
+};
+
 const saveITSMPainterSettings = async (settingsObject) => {
     chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
 }
@@ -90,12 +95,15 @@ const renderTeamsList = async () => {
     (await getITSMPainterTeams())?.forEach(el => {
         document.getElementById(`edit-${el.id}`).addEventListener('click', () => {
             document.getElementById(`team-${el.id}`).innerHTML = `
-                <input id="name-${el.id}" class="itsm-painter-textbox" type="text" value="${el.name}" />
+                <input id="name-${el.id}" class="itsm-painter-textbox itsm-painter-full-height-element" type="text" value="${el.name}" />
 
                 <div class="itsm-painter-team-setting-handlers-container">
                     <input id="color-${el.id}" class="itsm-painter-color-picker" type="color" value="${el.color}" />
-                    <button id="save-${el.id}" class="itsm-painter-btn">Сохранить</button>
-                    <button id="cancel-${el.id}" class="itsm-painter-btn">Отменить</button>
+                    <button id="random-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container">
+                        <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
+                    </button>
+                    <button id="save-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>
+                    <button id="cancel-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element">Отменить</button>
                 </div>`;
 
                 addSaveCancelListeners(el.id);
@@ -122,6 +130,10 @@ const renderTeamsList = async () => {
 }
 
 const addSaveCancelListeners = (teamId, isNew) => {
+    document.getElementById(`random-${teamId}`).addEventListener('click', () => {
+        document.getElementById(`color-${teamId}`).value = getRandomHexColor();
+    });
+
     document.getElementById(`save-${teamId}`).addEventListener('click', () => {
         const name = document.getElementById(`name-${teamId}`)?.value?.trim();
         const color = document.getElementById(`color-${teamId}`).value;
@@ -147,7 +159,7 @@ const getTeamComponent = (teamId, name, color, hidden) => {
     return `<div id="team-${teamId}" class="itsm-painter-team-setting">
 
         <div class="itsm-painter-settings-team-name-container">
-            <div id="hide-team-${teamId}" class="itsm-painter-settings-team-show-state">
+            <div id="hide-team-${teamId}" class="itsm-painter-icon-container">
                 <img src="${chrome.runtime.getURL(`src/icons/${hidden ? 'Hidden' : 'Show'}.svg`)}" />
             </div>
             <span title="${name}" class="itsm-painter-team-name">${name}</span>
@@ -156,8 +168,8 @@ const getTeamComponent = (teamId, name, color, hidden) => {
         
         <div class="itsm-painter-team-setting-handlers-container">
             <div id="color-picker-${teamId}" title="Скопировать цвет" class="itsm-painter-team-setting-color-container" style="background-color: ${color};"></div>
-            <button id="edit-${teamId}" class="itsm-painter-btn">Изменить</button>
-            <button id="delete-${teamId}" class="itsm-painter-btn itsm-painter-delete-btn">Удалить</button>
+            <button id="edit-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element">Изменить</button>
+            <button id="delete-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-delete-btn">Удалить</button>
         </div>
     </div>`;
 }
@@ -223,7 +235,7 @@ const getStylesSet = async () => {
             background: var(--color-surface-neutral);
         }
 
-        .welcome-homepage.with-rings-background img, .itsm-painter-settings-team-show-state img {
+        .welcome-homepage.with-rings-background img, .itsm-painter-icon-container img {
             filter: invert(1);
         }
         
@@ -299,6 +311,10 @@ const getStylesSet = async () => {
             user-select: none;
         }
 
+        .itsm-painter-full-height-element {
+            height: 100%;
+        }
+
         .itsm-painter-textbox {
             border: 1px solid var(--color-border-surface);
             height: 20px;
@@ -330,12 +346,12 @@ const getStylesSet = async () => {
             padding: 10px 15px;
             column-gap: 10px;
         }
-        
-        .itsm-painter-settings-team-show-state {
+
+        .itsm-painter-icon-container {
             cursor: pointer;
         }
-        
-        .itsm-painter-settings-team-show-state img {
+
+        .itsm-painter-icon-container img {
             width: 18px;
             height: 18px;
             user-select: none;
@@ -349,7 +365,7 @@ const getStylesSet = async () => {
         }
         
         .itsm-painter-teams-colors-settings-container {
-            width: 380px;
+            width: 410px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -381,12 +397,14 @@ const getStylesSet = async () => {
             justify-content: space-between;
             align-items: center;
             column-gap: 3px;
+            height: 26px;
         }
 
         .itsm-painter-team-setting-handlers-container {
             display: flex;
             column-gap: 5px;
             align-items: center;
+            height: 100%;
         }
 
         .itsm-painter-team-setting-color-container, .itsm-painter-color-picker {
@@ -484,11 +502,14 @@ const addITSMPainterHandlers = async () => {
         let range = document.createRange();
         const teamId = new Date().getTime();
         let newTeamComponentNode = range.createContextualFragment(`<div id="team-${teamId}" class="itsm-painter-team-setting">
-            <input id="name-${teamId}" class="itsm-painter-textbox" type="text" />
+            <input id="name-${teamId}" class="itsm-painter-textbox itsm-painter-full-height-element" type="text" />
             <div class="itsm-painter-team-setting-handlers-container">
                 <input id="color-${teamId}" class="itsm-painter-color-picker" type="color" />
-                <button id="save-${teamId}" class="itsm-painter-btn">Сохранить</button>
-                <button id="cancel-${teamId}" class="itsm-painter-btn">Отменить</button>
+                <button id="random-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container">
+                    <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
+                </button>
+                <button id="save-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>
+                <button id="cancel-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element">Отменить</button>
             </div>
         </div>`);
         document.getElementById('itsm-painter-teams-container').insertBefore(newTeamComponentNode, null);
