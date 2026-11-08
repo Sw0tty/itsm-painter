@@ -99,7 +99,7 @@ const renderTeamsList = async () => {
 
                 <div class="itsm-painter-team-setting-handlers-container">
                     <input id="color-${el.id}" class="itsm-painter-color-picker" type="color" value="${el.color}" />
-                    <button id="random-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container">
+                    <button id="random-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
                         <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
                     </button>
                     <button id="save-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>
@@ -130,8 +130,14 @@ const renderTeamsList = async () => {
 }
 
 const addSaveCancelListeners = (teamId, isNew) => {
+    document.getElementById(`color-${teamId}`).addEventListener('input', (event) => {
+        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${event.target.value} 100%)`);
+    });
+
     document.getElementById(`random-${teamId}`).addEventListener('click', () => {
-        document.getElementById(`color-${teamId}`).value = getRandomHexColor();
+        const randomHexColor = getRandomHexColor();
+        document.getElementById(`color-${teamId}`).value = randomHexColor;
+        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${randomHexColor} 100%)`);
     });
 
     document.getElementById(`save-${teamId}`).addEventListener('click', () => {
@@ -152,6 +158,7 @@ const addSaveCancelListeners = (teamId, isNew) => {
         } else {
             renderTeamsList();
         }
+        document.documentElement.style.removeProperty(`--itsm-painter-item-background-${teamId}`);
     });
 }
 
@@ -235,7 +242,7 @@ const getStylesSet = async () => {
             background: var(--color-surface-neutral);
         }
 
-        .welcome-homepage.with-rings-background img, .itsm-painter-icon-container img {
+        .welcome-homepage.with-rings-background img, .itsm-painter-icon-container:not(.cancel-invert) img {
             filter: invert(1);
         }
         
@@ -492,7 +499,7 @@ const getStylesSet = async () => {
 
         ${(await Promise.all(
             (await getITSMPainterTeams()).map(async el => { return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
-            background: ${(await getITSMPainterSettings()).addons.darkMode ? `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%)` : `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%)`};
+            background: ${`var(--itsm-painter-item-background-${el.id}, linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%))`};
             ${el?.hidden ? 'display: none;' : ''}
         }` })
         )).join("\n\n")}
@@ -511,7 +518,7 @@ const addITSMPainterHandlers = async () => {
             <input id="name-${teamId}" class="itsm-painter-textbox itsm-painter-full-height-element" type="text" />
             <div class="itsm-painter-team-setting-handlers-container">
                 <input id="color-${teamId}" class="itsm-painter-color-picker" type="color" />
-                <button id="random-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container">
+                <button id="random-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
                     <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
                 </button>
                 <button id="save-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>

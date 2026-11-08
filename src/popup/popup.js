@@ -1,5 +1,6 @@
 const ITSMPainterConsts = {
-    storageId: 'ITSMPainter'
+    storageId: 'ITSMPainter',
+    workingDomain: 'itsm.mos.ru',
 }
 
 chrome.storage.local.get(ITSMPainterConsts.storageId).then((result) => {
@@ -70,8 +71,8 @@ const checkSpace = async () => {
             const domain = spaceUrl.hostname;
 
             document.getElementById('itsm-painter-space-handler-btn-container').innerHTML = `
-                ${domain.includes('itsm.mos.ru') ? `
-                    ${(await getITSMPainterSettings()).spaces.find(el => el === domain) && domain.includes('itsm.mos.ru') ? `
+                ${domain.includes(ITSMPainterConsts.workingDomain) ? `
+                    ${(await getITSMPainterSettings()).spaces.find(el => el === domain) && domain.includes(ITSMPainterConsts.workingDomain) ? `
                     <button id="removeSpaceBtn" class="itsm-painter-btn itsm-painter-delete-btn">Удалить текущее пространсто</button>
                     ` : `
                     <button id="addSpaceBtn" class="itsm-painter-btn">Добавить текущее пространсто</button>
@@ -87,20 +88,20 @@ const checkSpace = async () => {
 
 const addConstListeners = () => {
     document.getElementById('importConfig').addEventListener('click', async () => {
-        const [fileHandle] = await window.showOpenFilePicker({
-            types: [
-                {
-                    description: "JSON files",
-                    accept: { "json/*": [".json"] }
-                }
-            ],
-            multiple: false
-        });
-
-        const file = await fileHandle.getFile();
-        const fileContent = await file.text();
-
         try {
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [
+                    {
+                        description: "JSON files",
+                        accept: { 'json/*': ['.json'] }
+                    }
+                ],
+                multiple: false
+            });
+
+            const file = await fileHandle.getFile();
+            const fileContent = await file.text();
+
             const { teams, spaces } = JSON.parse(fileContent);
             const settings = await getITSMPainterSettings();
             let uniqueId = 0;
@@ -125,21 +126,32 @@ const addConstListeners = () => {
                 chrome.tabs.reload();
             });
         }
-        catch {
+        catch (error) {
+            if (error.name === "AbortError") {
+                return null;
+            }
             console.error("Unexpected file data");
         }
     });
 
     document.getElementById('exportConfig').addEventListener('click', async () => {
-        const fileHandle = await window.showSaveFilePicker({
-            suggestedName: 'ITSMPainter-config.json',
-            acceptedTypes: ['.json'],
-            startIn: "downloads"
-        });
-        const writableStream = await fileHandle.createWritable();
+        try {
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: "ITSMPainter-config.json",
+                acceptedTypes: ['.json'],
+                startIn: "downloads"
+            });
+            const writableStream = await fileHandle.createWritable();
 
-        await writableStream.write(JSON.stringify(await getITSMPainterSettings()));
-        await writableStream.close();
+            await writableStream.write(JSON.stringify(await getITSMPainterSettings()));
+            await writableStream.close();
+        }
+        catch (error) {
+            if (error.name === "AbortError") {
+                return null;
+            }
+            console.error("Export config error");
+        }
     });
 
     document.getElementById('itsm-painter-info-modal-switch-btn').addEventListener('click', () => {
