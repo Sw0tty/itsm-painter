@@ -1,6 +1,13 @@
+import { ITSMPainterSettings } from "../app-resource/app-types"
+import { StorageManager } from "./storage.scripts";
+
+const storageManager = new StorageManager();
 const ITSMPainterConsts = {
     storageId: 'ITSMPainter',
     stylesSetId: 'ITSMPainterStylesSet',
+
+
+
     itsmButtonsMenuContainer: document.getElementById("nav-primary")?.getElementsByClassName("console_buttons")[0],
     shortFormatTasksContainer: () => { return document.getElementsByClassName('grid-container')[0] },
     fullFormatTasksContainer: () => { return document.getElementById('view_list_container')?.querySelector('div') },
@@ -9,65 +16,66 @@ const ITSMPainterConsts = {
     updateInterval: 60000 * 10
 }
 
-const getITSMPainterSettings = async () => {
-    const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-    if (!data) {
-        chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} }).then(() => {
-            return getITSMPainterSettings();
-        });
-    }
-    return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-}
+// const getITSMPainterSettings = async (): Promise<ITSMPainterSettings> => {
+//     const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
+//     if (!data) {
+//         const itsmPainterSettingsBase: ITSMPainterSettings = { teams: [], addons: { keepRemind: false, darkMode: false }, spaces: [] };
+//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: itsmPainterSettingsBase }).then(() => {
+//             return getITSMPainterSettings();
+//         });
+//     }
+//     return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] as ITSMPainterSettings });
+// }
 
-const getITSMPainterTeams = async () => {
-    return (await getITSMPainterSettings())?.teams;
-}
+// const getITSMPainterTeams = async () => {
+//     return (await storageManager.getITSMPainterSettings())?.teams;
+// }
 
 const getRandomHexColor = () => {
     const randomNum = Math.floor(Math.random() * 16777215);
     return '#' + randomNum.toString(16).padStart(6, '0');
 };
 
-const saveITSMPainterSettings = async (settingsObject) => {
-    chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
-}
+// const saveITSMPainterSettings = async (settingsObject) => {
+//     chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
+// }
 
-const saveTeam = async (teamId, name, color) => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
-    if (existingTeam) {
-        existingTeam.name = name;
-        existingTeam.color = color;
-    } else {
-        itsmPainterSettings.teams.push({ id: teamId, name: name, color: color, hidden: false });
-    }
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const saveTeam = async (teamId, name, color) => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
+//     if (existingTeam) {
+//         existingTeam.name = name;
+//         existingTeam.color = color;
+//     } else {
+//         itsmPainterSettings.teams.push({ id: teamId, name: name, color: color, hidden: false });
+//     }
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
-const deleteTeam = async (id) => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    itsmPainterSettings.teams = itsmPainterSettings.teams.filter(el => el.id != id);
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const deleteTeam = async (id) => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     itsmPainterSettings.teams = itsmPainterSettings.teams.filter(el => el.id != id);
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
-const hideTeam = async (teamId) => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
-    existingTeam.hidden = !existingTeam?.hidden;
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const hideTeam = async (teamId) => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
+//     existingTeam.hidden = !existingTeam?.hidden;
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
-const switchRemind = async () => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    itsmPainterSettings.addons.keepRemind = document.getElementById('itsm-painter-reminder-state').checked;
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const switchRemind = async () => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     itsmPainterSettings.addons.keepRemind = (document.getElementById('itsm-painter-reminder-state') as HTMLInputElement).checked;
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
-const switchDarkMode = async () => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    itsmPainterSettings.addons.darkMode = document.getElementById('itsm-painter-dark-mode-state').checked;
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const switchDarkMode = async () => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     itsmPainterSettings.addons.darkMode = (document.getElementById('itsm-painter-dark-mode-state') as HTMLInputElement).checked;
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
 const addTasksContainerObserver = () => {
     const intervalId = window.setInterval(() => {
@@ -83,16 +91,16 @@ const addTasksContainerObserver = () => {
 
 const addIdsForFullStyle = async () => {
     const teams = document.getElementsByClassName('team');
-    const ITSMPainterTeams = await getITSMPainterTeams();
+    const ITSMPainterTeams = await storageManager.getITSMPainterTeams();
     for (let team of teams) {
         team.id = `ITSMPainter-team-${ITSMPainterTeams.find(el => el.name === team.innerHTML).id}`;
     }
 }
 
 const renderTeamsList = async () => {
-    document.getElementById('itsm-painter-teams-container').innerHTML = (await getITSMPainterTeams())?.map(el => { return getTeamComponent(el.id, el.name, el.color, el?.hidden) }).join('');
+    document.getElementById('itsm-painter-teams-container').innerHTML = (await storageManager.getITSMPainterTeams())?.map(el => { return getTeamComponent(el.id, el.name, el.color, el?.hidden) }).join('');
 
-    (await getITSMPainterTeams())?.forEach(el => {
+    (await storageManager.getITSMPainterTeams())?.forEach(el => {
         document.getElementById(`edit-${el.id}`).addEventListener('click', () => {
             document.getElementById(`team-${el.id}`).innerHTML = `
                 <input id="name-${el.id}" class="itsm-painter-textbox itsm-painter-full-height-element" type="text" value="${el.name}" />
@@ -110,18 +118,18 @@ const renderTeamsList = async () => {
         });
 
         document.getElementById(`color-picker-${el.id}`).addEventListener('click', async () => {
-            navigator.clipboard.writeText((await getITSMPainterTeams()).find(team => team.id === el.id).color);
+            navigator.clipboard.writeText((await storageManager.getITSMPainterTeams()).find(team => team.id === el.id).color);
         });
 
         document.getElementById(`delete-${el.id}`).addEventListener('click', () => {
-            deleteTeam(el.id).then(() => {
+            storageManager.deleteTeam(el.id).then(() => {
                 renderTeamsList();
                 updateStylesSet();
             });
         });
 
         document.getElementById(`hide-team-${el.id}`).addEventListener('click', () => {
-            hideTeam(el.id).then(() => {
+            storageManager.hideTeam(el.id).then(() => {
                 renderTeamsList();
                 updateStylesSet();
             });
@@ -129,23 +137,23 @@ const renderTeamsList = async () => {
     });
 }
 
-const addSaveCancelListeners = (teamId, isNew) => {
+const addSaveCancelListeners = (teamId: number) => {
     document.getElementById(`color-${teamId}`).addEventListener('input', (event) => {
         document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${event.target.value} 100%)`);
     });
 
     document.getElementById(`random-${teamId}`).addEventListener('click', () => {
         const randomHexColor = getRandomHexColor();
-        document.getElementById(`color-${teamId}`).value = randomHexColor;
+        (document.getElementById(`color-${teamId}`) as HTMLInputElement).value = randomHexColor;
         document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${randomHexColor} 100%)`);
     });
 
     document.getElementById(`save-${teamId}`).addEventListener('click', () => {
-        const name = document.getElementById(`name-${teamId}`)?.value?.trim();
-        const color = document.getElementById(`color-${teamId}`).value;
+        const name = (document.getElementById(`name-${teamId}`) as HTMLInputElement)?.value?.trim();
+        const color = (document.getElementById(`color-${teamId}`) as HTMLInputElement).value;
         
         if (name?.length > 0) {
-            saveTeam(teamId, name, color).then(() => {
+            storageManager.saveTeam(teamId, name, color).then(() => {
                 renderTeamsList();
                 updateStylesSet();
             });
@@ -153,11 +161,7 @@ const addSaveCancelListeners = (teamId, isNew) => {
     });
 
     document.getElementById(`cancel-${teamId}`).addEventListener('click', () => {
-        if (isNew) {
-            document.getElementById(`team-${teamId}`).remove();
-        } else {
-            renderTeamsList();
-        }
+        renderTeamsList();
         document.documentElement.style.removeProperty(`--itsm-painter-item-background-${teamId}`);
     });
 }
@@ -187,7 +191,7 @@ const getStylesSet = async () => {
             background-color: #e0f0ff;
         }
 
-        ${(await getITSMPainterSettings()).addons.darkMode ?
+        ${(await storageManager.getITSMPainterSettings()).addons.darkMode ?
         `
         html, html[data-color-mode=light] {
             --color-surface: #132f4d;
@@ -498,7 +502,7 @@ const getStylesSet = async () => {
         }
 
         ${(await Promise.all(
-            (await getITSMPainterTeams()).map(async el => { return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
+            (await storageManager.getITSMPainterTeams()).map(async el => { return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
             background: ${`var(--itsm-painter-item-background-${el.id}, linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%))`};
             ${el?.hidden ? 'display: none;' : ''}
         }` })
@@ -532,7 +536,7 @@ const addITSMPainterHandlers = async () => {
 
     document.getElementById('itsm-painter-auto-add-team-btn').addEventListener('click', async () => {
         const uniqueTeamsFromITSM = new Set([...document.querySelectorAll('.grid-row > .cell-team > span')].map(el => el.textContent));
-        const itsmPainterSettings = await getITSMPainterSettings();
+        const itsmPainterSettings = await storageManager.getITSMPainterSettings();
         const existingTeams = new Set(itsmPainterSettings.teams.map(el => el.name));
         const teamsDiff = uniqueTeamsFromITSM.difference(existingTeams);
         
@@ -541,7 +545,7 @@ const addITSMPainterHandlers = async () => {
             for (let teamName of uniqueTeamsFromITSM.difference(existingTeams)) {
                 itsmPainterSettings.teams.push({ id: new Date().getTime() + idDiff++, name: teamName, color: getRandomHexColor(), hidden: false });
             }
-            saveITSMPainterSettings(itsmPainterSettings).then(() => {
+            storageManager.saveITSMPainterSettings(itsmPainterSettings).then(() => {
                 renderTeamsList();
                 updateStylesSet();
             });
@@ -549,8 +553,8 @@ const addITSMPainterHandlers = async () => {
     });
 
     document.getElementById('itsm-painter-reminder-state').addEventListener('click', async () => {
-        switchRemind().then(async () => {
-            if ((await getITSMPainterSettings()).addons.keepRemind) {
+        storageManager.switchRemind().then(async () => {
+            if ((await storageManager.getITSMPainterSettings()).addons.keepRemind) {
                 checkDatagridElementsTarget();
                 addTasksContainerObserver();
             } else {
@@ -563,7 +567,7 @@ const addITSMPainterHandlers = async () => {
     });
 
     document.getElementById('itsm-painter-dark-mode-state').addEventListener('click', () => {
-        switchDarkMode().then(() => updateStylesSet());
+        storageManager.switchDarkMode().then(() => updateStylesSet());
     });
 };
 
@@ -575,9 +579,9 @@ const checkDatagridElementsTarget = () => {
             const existingStatus = target.parentNode.querySelector('.itsm-painter-hot-status');
             const splittedTargetDate = splittedTarget[1].split('.');
             const targetTime = splittedTarget[2];
-            const days = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`) - new Date())/(1000 * 60 * 60 * 24));
-            const hours = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`) - new Date())/(1000 * 60 * 60));
-            const minutes = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`) - new Date())/(1000 * 60));
+            const days = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime())/(1000 * 60 * 60 * 24));
+            const hours = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime())/(1000 * 60 * 60));
+            const minutes = Math.floor((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime())/(1000 * 60));
 
             if (existingStatus) {
                 existingStatus.remove();
@@ -594,7 +598,7 @@ const checkDatagridElementsTarget = () => {
                 target.insertAdjacentHTML('beforebegin', `
                     <div class="itsm-painter-hot-status itsm-painter-hot-status-minutes"><marquee class="itsm-painter-running-line">${minutes} ${(String(minutes).length === 2 && (String(minutes)[1] >= 5 || String(minutes)[1] === 0 || [11, 12, 13, 14].includes(minutes))) || (minutes > 4 && minutes < 10) ? 'минут' : (String(minutes).includes('1')) ? 'минута' : 'минуты'}</marquee></div>
                     `);
-            } else if ((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`) - new Date()) < 0) {
+            } else if ((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime()) < 0) {
                 target.insertAdjacentHTML('beforebegin', `
                     <div class="itsm-painter-hot-status itsm-painter-hot-status-zero"><marquee class="itsm-painter-running-line">Просрочено</marquee></div>
                     `);
@@ -635,11 +639,11 @@ const ITSMPainterBtnHandler = async () => {
                 <div class="itsm-painter-vertical-separator"></div>
                 <div class="itsm-painter-addons-container">
                     <label for="itsm-painter-reminder-state" class="itsm-painter-checkbox">
-                        <input id="itsm-painter-reminder-state" type="checkbox" ${(await getITSMPainterSettings()).addons.keepRemind ? 'checked' : ''} />
+                        <input id="itsm-painter-reminder-state" type="checkbox" ${(await storageManager.getITSMPainterSettings()).addons.keepRemind ? 'checked' : ''} />
                         <span>Включить напоминание</span>
                     </label>
                     <label for="itsm-painter-dark-mode-state" class="itsm-painter-checkbox">
-                        <input id="itsm-painter-dark-mode-state" type="checkbox" ${(await getITSMPainterSettings()).addons.darkMode ? 'checked' : ''} />
+                        <input id="itsm-painter-dark-mode-state" type="checkbox" ${(await storageManager.getITSMPainterSettings()).addons.darkMode ? 'checked' : ''} />
                         <span>Темная тема</span>
                     </label>
                 </div>
@@ -654,7 +658,7 @@ const checkDomainInSpaces = async () => {
     const spaceUrl = new URL(window.location.href);
     const domain = spaceUrl.hostname;
 
-    if ((await getITSMPainterSettings()).spaces.includes(domain)) {
+    if ((await storageManager.getITSMPainterSettings()).spaces.includes(domain)) {
         return true;
     }
     return false;
@@ -673,14 +677,14 @@ const startExtensionJob = async () => {
             addIdsForFullStyle();
         }
 
-        if ((await getITSMPainterSettings()).addons.keepRemind) {
+        if ((await storageManager.getITSMPainterSettings()).addons.keepRemind) {
             checkDatagridElementsTarget();
             addTasksContainerObserver();
         }
 
         window.addEventListener('click', (event) => {
             if (!document.getElementById('itsm-painter-settings-btn').contains(event.target) && !document.getElementById('itsm-painter-settings-container').contains(event.target) && !event.target.classList.contains('itsm-painter-btn')) {
-                document.getElementById('itsm-painter-settings-state').checked = false;
+                (document.getElementById('itsm-painter-settings-state') as HTMLInputElement).checked = false;
             }
         });
     }

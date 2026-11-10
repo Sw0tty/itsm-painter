@@ -1,52 +1,58 @@
-const ITSMPainterConsts = {
-    storageId: 'ITSMPainter',
-    workingDomain: 'itsm.mos.ru',
-}
+import { StorageManager } from "../app-scripts/storage.scripts";
+import { ITSMPainterConsts } from "../app-resource/app-consts";
 
-chrome.storage.local.get(ITSMPainterConsts.storageId).then((result) => {
-    if (!result[ITSMPainterConsts.storageId]) {
-        chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} });
-    }
-});
+const storageManager = new StorageManager();
 
-const getITSMPainterSettings = async () => {
-    const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-    if (!data) {
-        chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} }).then(() => {
-            return getITSMPainterSettings();
-        });
-    }
-    return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-}
+// const ITSMPainterConsts = {
+//     storageId: 'ITSMPainter',
+//     workingDomain: 'itsm.mos.ru',
+// }
 
-const saveITSMPainterSettings = async (settingsObject) => {
-    chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
-}
+storageManager.checkAndCreateNotExistSettings();
+// chrome.storage.local.get(ITSMPainterConsts.storageId).then((result) => {
+//     if (!result[ITSMPainterConsts.storageId]) {
+//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} });
+//     }
+// });
 
-const addSpace = async (spaceName) => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    const existingSpace = itsmPainterSettings.spaces.find(el => el === spaceName);
-    if (!existingSpace) {
-        itsmPainterSettings.spaces.push(spaceName);
-    }
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const getITSMPainterSettings = async () => {
+//     const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
+//     if (!data) {
+//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} }).then(() => {
+//             return getITSMPainterSettings();
+//         });
+//     }
+//     return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
+// }
 
-const removeSpace = async (spaceName) => {
-    const itsmPainterSettings = await getITSMPainterSettings();
-    itsmPainterSettings.spaces = itsmPainterSettings.spaces.filter(el => el !== spaceName);
-    saveITSMPainterSettings(itsmPainterSettings);
-}
+// const saveITSMPainterSettings = async (settingsObject) => {
+//     chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
+// }
+
+// const addSpace = async (spaceName) => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     const existingSpace = itsmPainterSettings.spaces.find(el => el === spaceName);
+//     if (!existingSpace) {
+//         itsmPainterSettings.spaces.push(spaceName);
+//     }
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
+
+// const removeSpace = async (spaceName) => {
+//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+//     itsmPainterSettings.spaces = itsmPainterSettings.spaces.filter(el => el !== spaceName);
+//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
+// }
 
 const renderSpaces = async () => {
-    const spaces = (await getITSMPainterSettings())?.spaces;
+    const spaces = (await storageManager.getITSMPainterSettings())?.spaces;
     document.getElementById('spacesContainer').innerHTML = spaces?.length > 0 ? (await Promise.all(spaces.map(space => { return `<div class="itsm-painter-space-container"><div class="itsm-painter-space">${space}</div><div class="itsm-painter-remove-space-btn" data-space="${space}" title="Удалить"><img class="itsm-painter-remove-icon" /></div></div>` }))).join('') : '<span class="itsm-painter-empty-spaces-caption">Вы пока не добавили пространства ITSM</span>';
 
-    const removeBtns = document.querySelectorAll('.itsm-painter-remove-space-btn');
+    const removeBtns: NodeListOf<HTMLElement> = document.querySelectorAll('.itsm-painter-remove-space-btn');
 
     for (let btn of removeBtns) {
         btn.addEventListener('click', () => {
-            removeSpace(btn.dataset.space).then(async () => {
+            storageManager.removeSpace(btn.dataset.space).then(async () => {
                 renderSpaces();
                 checkSpace();
 
@@ -72,7 +78,7 @@ const checkSpace = async () => {
 
             document.getElementById('itsm-painter-space-handler-btn-container').innerHTML = `
                 ${domain.includes(ITSMPainterConsts.workingDomain) ? `
-                    ${(await getITSMPainterSettings()).spaces.find(el => el === domain) && domain.includes(ITSMPainterConsts.workingDomain) ? `
+                    ${(await storageManager.getITSMPainterSettings()).spaces.find(el => el === domain) && domain.includes(ITSMPainterConsts.workingDomain) ? `
                     <button id="removeSpaceBtn" class="itsm-painter-btn itsm-painter-delete-btn">Удалить текущее пространсто</button>
                     ` : `
                     <button id="addSpaceBtn" class="itsm-painter-btn">Добавить текущее пространсто</button>
@@ -80,8 +86,8 @@ const checkSpace = async () => {
                 ` : ''}
             `;
 
-            document.getElementById('addSpaceBtn')?.addEventListener('click', async () => { addSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
-            document.getElementById('removeSpaceBtn')?.addEventListener('click', async () => { removeSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
+            document.getElementById('addSpaceBtn')?.addEventListener('click', async () => { storageManager.addSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
+            document.getElementById('removeSpaceBtn')?.addEventListener('click', async () => { storageManager.removeSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
         }
     });
 }
@@ -103,7 +109,7 @@ const addConstListeners = () => {
             const fileContent = await file.text();
 
             const { teams, spaces } = JSON.parse(fileContent);
-            const settings = await getITSMPainterSettings();
+            const settings = await storageManager.getITSMPainterSettings();
             let uniqueId = 0;
 
             for (let space of spaces) {
@@ -117,11 +123,11 @@ const addConstListeners = () => {
                 const existingTeam = settings.teams.find(el => el.name === name);
 
                 if (!existingTeam) {
-                    settings.teams.push({id: new Date().getTime() + uniqueId++, color: color, name: name})
+                    settings.teams.push({id: new Date().getTime() + uniqueId++, color: color, name: name, hidden: false})
                 }
             }
 
-            saveITSMPainterSettings(settings).then(() => {
+            storageManager.saveITSMPainterSettings(settings).then(() => {
                 renderSpaces();
                 chrome.tabs.reload();
             });
@@ -138,12 +144,17 @@ const addConstListeners = () => {
         try {
             const fileHandle = await window.showSaveFilePicker({
                 suggestedName: "ITSMPainter-config.json",
-                acceptedTypes: ['.json'],
+                types: [
+                    {
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }
+                ],
                 startIn: "downloads"
             });
             const writableStream = await fileHandle.createWritable();
 
-            await writableStream.write(JSON.stringify(await getITSMPainterSettings()));
+            await writableStream.write(JSON.stringify(await storageManager.getITSMPainterSettings()));
             await writableStream.close();
         }
         catch (error) {

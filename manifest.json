@@ -7,7 +7,7 @@
         "128": "src/icons/logo/128.png"
     },
     "action": {
-        "default_popup": "./src/popup/popup.html"
+        "default_popup": "src/popup/popup.html"
     },
     "permissions": ["activeTab", "storage"],
     "content_scripts": [
@@ -16,7 +16,7 @@
                 "http://*.itsm.mos.ru/*",
                 "https://*.itsm.mos.ru/*"
             ],
-            "js": ["./src/itsm-painter.js"]
+            "js": ["./src/app-scripts/itsm-painter.scripts.js"]
         }
     ],
     "web_accessible_resources": [
