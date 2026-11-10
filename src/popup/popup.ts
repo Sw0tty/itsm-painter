@@ -1,48 +1,10 @@
 import { StorageManager } from "../app-scripts/storage.scripts";
 import { ITSMPainterConsts } from "../app-resource/app-consts";
 
+
 const storageManager = new StorageManager();
 
-// const ITSMPainterConsts = {
-//     storageId: 'ITSMPainter',
-//     workingDomain: 'itsm.mos.ru',
-// }
-
 storageManager.checkAndCreateNotExistSettings();
-// chrome.storage.local.get(ITSMPainterConsts.storageId).then((result) => {
-//     if (!result[ITSMPainterConsts.storageId]) {
-//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} });
-//     }
-// });
-
-// const getITSMPainterSettings = async () => {
-//     const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-//     if (!data) {
-//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: {teams: [], addons: { keepRemind: false, darkMode: false }, spaces: []} }).then(() => {
-//             return getITSMPainterSettings();
-//         });
-//     }
-//     return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-// }
-
-// const saveITSMPainterSettings = async (settingsObject) => {
-//     chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
-// }
-
-// const addSpace = async (spaceName) => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     const existingSpace = itsmPainterSettings.spaces.find(el => el === spaceName);
-//     if (!existingSpace) {
-//         itsmPainterSettings.spaces.push(spaceName);
-//     }
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
-// const removeSpace = async (spaceName) => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     itsmPainterSettings.spaces = itsmPainterSettings.spaces.filter(el => el !== spaceName);
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
 
 const renderSpaces = async () => {
     const spaces = (await storageManager.getITSMPainterSettings())?.spaces;

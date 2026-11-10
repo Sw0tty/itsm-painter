@@ -1,7 +1,55 @@
-# ITSMPainter
-## EN Description
+<div align="center">
+  <h1 align="center">ITSMPainter</h1>
+</div>
+
+### Built With
+
+![Vite][Vite-url]
+![TypeScript][TypeScript-url]
+
 ## Getting started
-Browser extension for visual customization 'itsm.mos.ru '. After building and uploading the extension to the browser, you need to open the extension window on the extension panel and add space.
+### Dev
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Sw0tty/itsm-painter.git
+   ```
+2. Install NPM packages
+   ```sh
+   npm install
+   ```
+3. Run project
+   ```sh
+   npm run dev
+   ```
+4. Open browser extensions and add generated 'dist-dev' folder to extensions
+
+### Production
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Sw0tty/itsm-painter.git
+   ```
+2. Install NPM packages
+   ```sh
+   npm install
+   ```
+3. Run project
+   ```sh
+   npm run build
+   ```
+4. Open browser extensions and add generated 'dist-production' folder to extensions
+
+### From Chrome Web Store
+
+> [!WARNING]
+> In progress
+
+## Project Description
+
+## EN Description
+### First steps
+Browser extension for visual customization 'itsm.mos.ru'. After building and uploading the extension to the browser, you need to open the extension window on the extension panel and add space.
 
 ## Instruction
 ### Adding space
@@ -20,7 +68,7 @@ When importing the configuration, only unique spaces and commands will be added.
 The extension allows you to turn on the dark theme and set a reminder for completing tasks. When you turn on the reminder, a running line will appear for each task with a display of the remaining time to complete the task. The status has a standard urgency scheme and has an update interval every 10 minutes.
 
 ## RU Описание
-## Начало работы
+## Первые шаги
 Браузерное расширение для визуальной настройки 'itsm.mos.ru'. После сборки и загрузки расширения в браузер, необходимо открыть окно расширения на панели расширений и добавить пространство.
 
 ## Инструкция
@@ -38,3 +86,7 @@ The extension allows you to turn on the dark theme and set a reminder for comple
 
 ### Дополнительные функции
 Расширение позволяет включить темную тему и задать напоминание на выполнение задач. При включении напоминания, у каждой задачи появится бегущая строка с отображение оставшегося времени на исполненение задачи. Статус имеет цветовую схему срочности и имеет интервал обновления каждые 10 минут.
+
+
+[Vite-url]: https://img.shields.io/badge/Vite-8678FD?style=for-the-badge&logo=vite&logoColor=FFCE26
+[TypeScript-url]: https://img.shields.io/badge/TypeScript-3179C7?style=for-the-badge&logo=typescript&logoColor=FFFFFF

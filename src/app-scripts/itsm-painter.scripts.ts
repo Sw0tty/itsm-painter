@@ -1,14 +1,11 @@
-import { ITSMPainterSettings } from "../app-resource/app-types"
 import { StorageManager } from "./storage.scripts";
+import { ITSMPainterConsts } from "../app-resource/app-consts";
+import { AppScripts } from "./app.scripts";
+import { getStylesSet } from "../app-resource/styles-set";
 
 const storageManager = new StorageManager();
-const ITSMPainterConsts = {
-    storageId: 'ITSMPainter',
-    stylesSetId: 'ITSMPainterStylesSet',
 
-
-
-    itsmButtonsMenuContainer: document.getElementById("nav-primary")?.getElementsByClassName("console_buttons")[0],
+const ITSMPainterObserverState = {
     shortFormatTasksContainer: () => { return document.getElementsByClassName('grid-container')[0] },
     fullFormatTasksContainer: () => { return document.getElementById('view_list_container')?.querySelector('div') },
     tasksContainerObserver: undefined,
@@ -16,77 +13,16 @@ const ITSMPainterConsts = {
     updateInterval: 60000 * 10
 }
 
-// const getITSMPainterSettings = async (): Promise<ITSMPainterSettings> => {
-//     const data = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
-//     if (!data) {
-//         const itsmPainterSettingsBase: ITSMPainterSettings = { teams: [], addons: { keepRemind: false, darkMode: false }, spaces: [] };
-//         chrome.storage.local.set({ [ITSMPainterConsts.storageId]: itsmPainterSettingsBase }).then(() => {
-//             return getITSMPainterSettings();
-//         });
-//     }
-//     return await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] as ITSMPainterSettings });
-// }
-
-// const getITSMPainterTeams = async () => {
-//     return (await storageManager.getITSMPainterSettings())?.teams;
-// }
-
-const getRandomHexColor = () => {
-    const randomNum = Math.floor(Math.random() * 16777215);
-    return '#' + randomNum.toString(16).padStart(6, '0');
-};
-
-// const saveITSMPainterSettings = async (settingsObject) => {
-//     chrome.storage.local.set({ [ITSMPainterConsts.storageId]: settingsObject });
-// }
-
-// const saveTeam = async (teamId, name, color) => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
-//     if (existingTeam) {
-//         existingTeam.name = name;
-//         existingTeam.color = color;
-//     } else {
-//         itsmPainterSettings.teams.push({ id: teamId, name: name, color: color, hidden: false });
-//     }
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
-// const deleteTeam = async (id) => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     itsmPainterSettings.teams = itsmPainterSettings.teams.filter(el => el.id != id);
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
-// const hideTeam = async (teamId) => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     const existingTeam = itsmPainterSettings.teams.find(el => el.id === teamId);
-//     existingTeam.hidden = !existingTeam?.hidden;
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
-// const switchRemind = async () => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     itsmPainterSettings.addons.keepRemind = (document.getElementById('itsm-painter-reminder-state') as HTMLInputElement).checked;
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
-// const switchDarkMode = async () => {
-//     const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-//     itsmPainterSettings.addons.darkMode = (document.getElementById('itsm-painter-dark-mode-state') as HTMLInputElement).checked;
-//     storageManager.saveITSMPainterSettings(itsmPainterSettings);
-// }
-
 const addTasksContainerObserver = () => {
     const intervalId = window.setInterval(() => {
         checkDatagridElementsTarget();
-    }, ITSMPainterConsts.updateInterval);
+    }, ITSMPainterObserverState.updateInterval);
     const tasksContainer = new MutationObserver(() => {
         checkDatagridElementsTarget();
     });
-    tasksContainer.observe(ITSMPainterConsts?.shortFormatTasksContainer() ?? ITSMPainterConsts?.fullFormatTasksContainer(), { childList: true });
-    ITSMPainterConsts.tasksContainerObserver = tasksContainer;
-    ITSMPainterConsts.updateTasksObserverIntervalId = intervalId;
+    tasksContainer.observe(ITSMPainterObserverState?.shortFormatTasksContainer() ?? ITSMPainterObserverState?.fullFormatTasksContainer(), { childList: true });
+    ITSMPainterObserverState.tasksContainerObserver = tasksContainer;
+    ITSMPainterObserverState.updateTasksObserverIntervalId = intervalId;
 }
 
 const addIdsForFullStyle = async () => {
@@ -107,7 +43,7 @@ const renderTeamsList = async () => {
 
                 <div class="itsm-painter-team-setting-handlers-container">
                     <input id="color-${el.id}" class="itsm-painter-color-picker" type="color" value="${el.color}" />
-                    <button id="random-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
+                    <button id="random-${el.id}" title="Сгенерировать цвет" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
                         <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
                     </button>
                     <button id="save-${el.id}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>
@@ -139,13 +75,13 @@ const renderTeamsList = async () => {
 
 const addSaveCancelListeners = (teamId: number) => {
     document.getElementById(`color-${teamId}`).addEventListener('input', (event) => {
-        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${event.target.value} 100%)`);
+        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, AppScripts.getTeamColorRenderSchema((event.target as HTMLInputElement).value));
     });
 
     document.getElementById(`random-${teamId}`).addEventListener('click', () => {
-        const randomHexColor = getRandomHexColor();
+        const randomHexColor = AppScripts.getRandomHexColor();
         (document.getElementById(`color-${teamId}`) as HTMLInputElement).value = randomHexColor;
-        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, `linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${randomHexColor} 100%)`);
+        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, AppScripts.getTeamColorRenderSchema(randomHexColor));
     });
 
     document.getElementById(`save-${teamId}`).addEventListener('click', () => {
@@ -185,333 +121,8 @@ const getTeamComponent = (teamId, name, color, hidden) => {
     </div>`;
 }
 
-const getStylesSet = async () => {
-    return `
-        #view_list .table.focused .grid-row.item-selected:not(.item-dragged), #view_list .table.blurred .grid-row.item-selected {
-            background-color: #e0f0ff;
-        }
-
-        ${(await storageManager.getITSMPainterSettings()).addons.darkMode ?
-        `
-        html, html[data-color-mode=light] {
-            --color-surface: #132f4d;
-            --color-background: #132f4d;
-            --color-text: #e4e4e4;
-            --color-on-background: #e4e4e4;
-            --color-on-surface: #e4e4e4;
-            --color-x-perano-blue-tint: #2e4a89;
-            --color-x-perano-blue: #25366d;
-            --color-link-regular: #26adfc; /*a links*/
-            --color-link-title: #26adfc;
-            --color-link-preview: #26adfc;
-            --color-surface-neutral: #24427d; /*a:hover*/
-            --color-surface-active: #24427d;
-            --gradient-x-dark: linear-gradient(var(--color-x-purple), #132f4d);
-            --color-text-disabled: #8396b2;
-            --gradient-specialist-view: linear-gradient(#001133 70%, #155597 100%);
-            --color-surface-tint: #24427d;
-            --gradient-x-electric-neon-tint: linear-gradient(#637dba, var(--color-transparent));
-            --color-text-green: #6ee822;
-            --color-accent: #001133;
-            --color-surface-hover: var(--color-surface-primary);
-            --color-surface-mailbox-toggles: #648fbd;
-            --color-surface-icons: #e9e9e9;
-            --color-surface-icons-dark: #1e293b;
-            --color-surface-global-search-box: #ffffff;
-            --color-surface-table-selected-state: #34638f;
-            --color-x-purple-dark: var(--color-surface-icons);
-        }
-
-        .btn_segmented .btn.btn_toggle.active {
-            background: var(--color-surface-primary);
-        }
-
-        .btn_segmented .btn.btn_toggle {
-            background: var(--color-surface-mailbox-toggles);
-        }
-
-        .email-quoted-reply, .email-signature-reply {
-            color: var(--color-text);
-        }
-
-        .quiet, #view_list .lane-inset .quiet {
-            color: var(--color-text);
-        }
-
-        #broadcasts-overlay {
-            background-image: none;
-        }
-
-        div.modal_menu a:hover:not(.disabled) {
-            background: var(--color-surface-neutral);
-        }
-
-        .welcome-homepage.with-rings-background img, .itsm-painter-icon-container:not(.cancel-invert) img {
-            filter: invert(1);
-        }
-        
-        .ii, .i_icon, #view_list .lane-icons.large-icons .icon-large, #view_list .icon-category,
-        #modal-records-console-menu ul li[role=menuitem] a[role=link] .ii {
-            color: var(--color-surface-icons);
-        }
-        
-        .icon-search {
-            color: var(--color-surface-icons-dark);
-        }
-        
-        div.avatar {
-            color: var(--color-surface-icons);
-        }
-
-        #globalsearchbox {
-            background-color: var(--color-surface-global-search-box);
-        }
-
-        #view_list .table.blurred .grid-row.item-selected, #view_list .table.focused .grid-row.item-selected:not(.item-dragged),
-        #view_list .list.blurred .item.item-selected, #view_list .item.item-selected:not(.item-dragged) {
-            background-color: var(--color-surface-table-selected-state);
-        }
-
-        * {
-            scrollbar-color: var(--color-text) var(--color-surface);
-        }
-        `
-        : ''}
-        
-        .cell-target {
-            color: var(--color-text-green);
-        }
-
-        .notes-list ul.list .note-footer .note-footer-icons {
-            overflow: hidden;
-        }
-        
-        .welcome-homepage .welcome-header {
-            block-size: auto;
-        }
-
-        .grid-row:hover {
-            background: #a1d1ff;
-        }
-        
-        .grid-row {
-            overflow: hidden;
-            position: relative;
-            z-index: 0;
-        }
-
-        .itsm-painter-vertical-separator {
-            border-left: 1px solid #d7d7d7;
-            margin: 10px 0;
-        }
-        
-        .itsm-painter-settings-btn {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            cursor: pointer;
-        }
-
-        .itsm-painter-btn {
-            background: white;
-            border: 1px solid var(--color-border-surface);
-            padding: 3px 10px;
-            cursor: pointer;
-            transition: background 0.3s, color 0.3s;
-            text-wrap: nowrap;
-            user-select: none;
-        }
-
-        .itsm-painter-full-height-element {
-            height: 100%;
-        }
-
-        .itsm-painter-textbox {
-            border: 1px solid var(--color-border-surface);
-            border-radius: 3px;
-            padding: 0 3px;
-        }
-
-        .itsm-painter-btn:hover {
-            background: var(--color-border-surface);
-        }
-
-        .itsm-painter-delete-btn:hover {
-            color: #ec2525;
-        }
-
-        #itsm-painter-settings-container {
-            background: var(--color-surface);
-            height: 250px;
-            position: fixed;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, .2);
-            border: 1px solid var(--color-border-surface);
-            left: 67px;
-            border-radius: 20px;
-            z-index: 999;
-            font-family: monospace;
-            color: var(--color-on-surface);
-            font-size: 13px;
-            display: none;
-            padding: 10px 15px;
-            column-gap: 10px;
-        }
-
-        .itsm-painter-icon-container {
-            cursor: pointer;
-        }
-
-        .itsm-painter-icon-container img {
-            width: 18px;
-            height: 18px;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        .itsm-painter-settings-team-name-container {
-            display: flex;
-            column-gap: 5px;
-            overflow: hidden;
-        }
-        
-        .itsm-painter-teams-colors-settings-container {
-            width: 430px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .itsm-painter-settings-container-teams-actions {
-            display: flex;
-            flex-direction: column;
-            row-gap: 3px;
-        }
-
-        #itsm-painter-teams-container {
-            flex: 1 0 0%;
-            overflow: auto;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            row-gap: 5px;
-            padding: 5px 0px;
-        }
-
-        .itsm-painter-color-picker::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        .itsm-painter-color-picker::-webkit-color-swatch {
-            border: 0;
-        }
-
-        #itsm-painter-settings-btn:has(#itsm-painter-settings-state:checked) ~ #itsm-painter-settings-container {
-            display: flex;
-        }
-
-        .itsm-painter-team-setting {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            column-gap: 3px;
-            height: 26px;
-        }
-
-        .itsm-painter-team-setting-handlers-container {
-            display: flex;
-            column-gap: 5px;
-            align-items: center;
-            height: 100%;
-        }
-
-        .itsm-painter-team-setting-color-container, .itsm-painter-color-picker {
-            max-width: 20px;
-            min-width: 20px;
-            max-height: 20px;
-            min-height: 20px;
-            border: 1px solid var(--color-border-surface);
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input[type=color] {
-            border: 1px solid var(--color-border-surface);
-        }
-
-        .itsm-painter-team-name {
-            text-wrap: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .itsm-painter-hot-status {
-            position: absolute;
-            width: 180px;
-            height: 97px;
-            left: -15px;
-            top: -50px;
-            z-index: -1;
-            display: flex;
-            align-items: center;
-            color: white;
-            font-size: 60px;
-            font-family: monospace;
-            font-weight: bold;
-            transform: rotate(330deg);
-            text-shadow: 0 0 1px black;
-        }
-
-        .itsm-painter-hot-status-days {
-            background: linear-gradient(179deg, #ffd653, transparent);
-        }
-
-        .itsm-painter-hot-status-hours {
-            background: linear-gradient(179deg,  #ff5900, transparent);
-        }
-
-        .itsm-painter-hot-status-minutes {
-            background: linear-gradient(179deg,  #ff0101, transparent);
-        }
-
-        .itsm-painter-hot-status-zero {
-            background: linear-gradient(179deg, #000000, transparent);
-        }
-
-        .avatar_initials {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .itsm-painter-running-line {
-            opacity: 0.7;
-        }
-
-        .itsm-painter-checkbox {
-            display: flex;
-            color: var(--color-on-surface);
-            column-gap: 5px;
-            text-wrap: nowrap;
-            width: max-content;
-            user-select: none;
-            cursor: pointer;
-        }
-        
-        .grid-row:hover {
-            background: rgba(255, 255, 255, 0);
-        }
-
-        ${(await Promise.all(
-            (await storageManager.getITSMPainterTeams()).map(async el => { return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
-            background: ${`var(--itsm-painter-item-background-${el.id}, linear-gradient(63deg, rgba(255, 255, 255, 0) 41%, ${el.color} 100%))`};
-            ${el?.hidden ? 'display: none;' : ''}
-        }` })
-        )).join("\n\n")}
-    `;
-}
-
 const updateStylesSet = async () => {
-    document.getElementById(ITSMPainterConsts.stylesSetId).innerHTML = await getStylesSet();
+    document.getElementById(ITSMPainterConsts.stylesSetId).innerHTML = await getStylesSet(await storageManager.getITSMPainterSettings());
 }
 
 const addITSMPainterHandlers = async () => {
@@ -522,7 +133,7 @@ const addITSMPainterHandlers = async () => {
             <input id="name-${teamId}" class="itsm-painter-textbox itsm-painter-full-height-element" type="text" />
             <div class="itsm-painter-team-setting-handlers-container">
                 <input id="color-${teamId}" class="itsm-painter-color-picker" type="color" />
-                <button id="random-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
+                <button id="random-${teamId}" title="Сгенерировать цвет" class="itsm-painter-btn itsm-painter-full-height-element itsm-painter-icon-container cancel-invert">
                     <img src="${chrome.runtime.getURL('src/icons/Random.svg')}" />
                 </button>
                 <button id="save-${teamId}" class="itsm-painter-btn itsm-painter-full-height-element">Сохранить</button>
@@ -543,7 +154,7 @@ const addITSMPainterHandlers = async () => {
         if (teamsDiff.size > 0) {
             let idDiff = 0;
             for (let teamName of uniqueTeamsFromITSM.difference(existingTeams)) {
-                itsmPainterSettings.teams.push({ id: new Date().getTime() + idDiff++, name: teamName, color: getRandomHexColor(), hidden: false });
+                itsmPainterSettings.teams.push({ id: new Date().getTime() + idDiff++, name: teamName, color: AppScripts.getRandomHexColor(), hidden: false });
             }
             storageManager.saveITSMPainterSettings(itsmPainterSettings).then(() => {
                 renderTeamsList();
@@ -558,9 +169,9 @@ const addITSMPainterHandlers = async () => {
                 checkDatagridElementsTarget();
                 addTasksContainerObserver();
             } else {
-                window.clearInterval(ITSMPainterConsts.updateTasksObserverIntervalId);
-                ITSMPainterConsts.tasksContainerObserver.disconnect();
-                ITSMPainterConsts.tasksContainerObserver = undefined;
+                window.clearInterval(ITSMPainterObserverState.updateTasksObserverIntervalId);
+                ITSMPainterObserverState.tasksContainerObserver.disconnect();
+                ITSMPainterObserverState.tasksContainerObserver = undefined;
                 removeHotStatuses();
             }
         });
@@ -596,7 +207,7 @@ const checkDatagridElementsTarget = () => {
                     `);
             } else if (hours < 1 && minutes > 0) {
                 target.insertAdjacentHTML('beforebegin', `
-                    <div class="itsm-painter-hot-status itsm-painter-hot-status-minutes"><marquee class="itsm-painter-running-line">${minutes} ${(String(minutes).length === 2 && (String(minutes)[1] >= 5 || String(minutes)[1] === 0 || [11, 12, 13, 14].includes(minutes))) || (minutes > 4 && minutes < 10) ? 'минут' : (String(minutes).includes('1')) ? 'минута' : 'минуты'}</marquee></div>
+                    <div class="itsm-painter-hot-status itsm-painter-hot-status-minutes"><marquee class="itsm-painter-running-line">${minutes} ${(String(minutes).length === 2 && (Number(String(minutes)[1]) >= 5 || Number(String(minutes)[1]) === 0 || [11, 12, 13, 14].includes(minutes))) || (minutes > 4 && minutes < 10) ? 'минут' : (String(minutes).includes('1')) ? 'минута' : 'минуты'}</marquee></div>
                     `);
             } else if ((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime()) < 0) {
                 target.insertAdjacentHTML('beforebegin', `
@@ -614,9 +225,9 @@ const removeHotStatuses = () => {
 }
 
 const addITSMPainterStylesSet = async () => {
-    const itsmPainterStyle = document.createElement("style");
+    const itsmPainterStyle = document.createElement('style');
     itsmPainterStyle.id = ITSMPainterConsts.stylesSetId;
-    itsmPainterStyle.innerHTML = await getStylesSet();
+    itsmPainterStyle.innerHTML = await getStylesSet(await storageManager.getITSMPainterSettings());
     document.head.appendChild(itsmPainterStyle);
 }
 
@@ -673,7 +284,7 @@ const startExtensionJob = async () => {
             addITSMPainterHandlers();
         });
 
-        if (ITSMPainterConsts?.fullFormatTasksContainer) {
+        if (ITSMPainterObserverState?.fullFormatTasksContainer) {
             addIdsForFullStyle();
         }
 
@@ -683,7 +294,8 @@ const startExtensionJob = async () => {
         }
 
         window.addEventListener('click', (event) => {
-            if (!document.getElementById('itsm-painter-settings-btn').contains(event.target) && !document.getElementById('itsm-painter-settings-container').contains(event.target) && !event.target.classList.contains('itsm-painter-btn')) {
+            const target = event.target as HTMLElement;
+            if (!document.getElementById('itsm-painter-settings-btn').contains(target) && !document.getElementById('itsm-painter-settings-container').contains(target) && !target.classList.contains('itsm-painter-btn')) {
                 (document.getElementById('itsm-painter-settings-state') as HTMLInputElement).checked = false;
             }
         });
