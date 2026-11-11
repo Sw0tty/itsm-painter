@@ -75,13 +75,13 @@ const renderTeamsList = async () => {
 
 const addSaveCancelListeners = (teamId: number) => {
     document.getElementById(`color-${teamId}`).addEventListener('input', (event) => {
-        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, AppScripts.getTeamColorRenderSchema((event.target as HTMLInputElement).value));
+        document.documentElement.style.setProperty(`${ITSMPainterConsts.itsmPainterItemBackgroundVarName}-${teamId}`, AppScripts.getTeamColorRenderSchema((event.target as HTMLInputElement).value));
     });
 
     document.getElementById(`random-${teamId}`).addEventListener('click', () => {
         const randomHexColor = AppScripts.getRandomHexColor();
         (document.getElementById(`color-${teamId}`) as HTMLInputElement).value = randomHexColor;
-        document.documentElement.style.setProperty(`--itsm-painter-item-background-${teamId}`, AppScripts.getTeamColorRenderSchema(randomHexColor));
+        document.documentElement.style.setProperty(`${ITSMPainterConsts.itsmPainterItemBackgroundVarName}-${teamId}`, AppScripts.getTeamColorRenderSchema(randomHexColor));
     });
 
     document.getElementById(`save-${teamId}`).addEventListener('click', () => {
@@ -98,7 +98,7 @@ const addSaveCancelListeners = (teamId: number) => {
 
     document.getElementById(`cancel-${teamId}`).addEventListener('click', () => {
         renderTeamsList();
-        document.documentElement.style.removeProperty(`--itsm-painter-item-background-${teamId}`);
+        document.documentElement.style.removeProperty(`${ITSMPainterConsts.itsmPainterItemBackgroundVarName}-${teamId}`);
     });
 }
 

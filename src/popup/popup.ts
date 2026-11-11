@@ -8,7 +8,11 @@ storageManager.checkAndCreateNotExistSettings();
 
 const renderSpaces = async () => {
     const spaces = (await storageManager.getITSMPainterSettings())?.spaces;
-    document.getElementById('spacesContainer').innerHTML = spaces?.length > 0 ? (await Promise.all(spaces.map(space => { return `<div class="itsm-painter-space-container"><div class="itsm-painter-space">${space}</div><div class="itsm-painter-remove-space-btn" data-space="${space}" title="Удалить"><img class="itsm-painter-remove-icon" /></div></div>` }))).join('') : '<span class="itsm-painter-empty-spaces-caption">Вы пока не добавили пространства ITSM</span>';
+    document.getElementById('spacesContainer').innerHTML = spaces?.length > 0
+        ?
+        (await Promise.all(spaces.map(space => { return `<div class="itsm-painter-space-container"><div class="itsm-painter-space">${space}</div><div class="itsm-painter-remove-space-btn" data-space="${space}" title="Удалить"><img class="itsm-painter-remove-icon" /></div></div>` }))).join('')
+        :
+        '<span class="itsm-painter-empty-spaces-caption">Вы пока не добавили пространства ITSM</span>';
 
     const removeBtns: NodeListOf<HTMLElement> = document.querySelectorAll('.itsm-painter-remove-space-btn');
 

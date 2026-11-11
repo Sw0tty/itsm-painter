@@ -1,5 +1,6 @@
 import { ITSMPainterSettings } from "./app-types";
 import { AppScripts } from "../app-scripts/app.scripts";
+import { ITSMPainterConsts } from "./app-consts";
 
 
 export const getStylesSet = async (ITSMPainterSettings: ITSMPainterSettings) => {
@@ -320,7 +321,7 @@ export const getStylesSet = async (ITSMPainterSettings: ITSMPainterSettings) => 
 
         ${(await Promise.all(
             ITSMPainterSettings.teams.map(async el => {return `.grid-row:has(span[title="${el.name}"]), .item:has(span#ITSMPainter-team-${el.id}) {
-            background: ${`var(--itsm-painter-item-background-${el.id}, ${AppScripts.getTeamColorRenderSchema(el.color)})`};
+            background: ${`var(${ITSMPainterConsts.itsmPainterItemBackgroundVarName}-${el.id}, ${AppScripts.getTeamColorRenderSchema(el.color)})`};
             ${el?.hidden ? 'display: none;' : ''}
             }` 
             })
