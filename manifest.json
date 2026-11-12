@@ -1,6 +1,6 @@
 {
     "name": "ITSM Painter",
-    "description": "Настраивайте цвета для команд, задавайте напоминания для задач, меняйте оформление.",
+    "description": "Customize colors for teams, set reminders for tasks, and change the design.",
     "version": "1.2",
     "manifest_version": 3,
     "icons": {
@@ -13,8 +13,8 @@
     "content_scripts": [
         {
             "matches": [
-                "http://*.itsm.mos.ru/*",
-                "https://*.itsm.mos.ru/*"
+                "http://*itsm.mos.ru/*",
+                "https://*itsm.mos.ru/*"
             ],
             "js": ["./src/app-scripts/itsm-painter.scripts.js"]
         }
