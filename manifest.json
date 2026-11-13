@@ -1,7 +1,7 @@
 {
     "name": "ITSM Painter",
-    "description": "Настраивайте цвета для команд, задавайте напоминания для задач, меняйте оформление.",
-    "version": "1.2",
+    "description": "Customize colors for teams, set reminders for tasks, and change the design.",
+    "version": "2.0",
     "manifest_version": 3,
     "icons": {
         "128": "src/icons/logo/128.png"
