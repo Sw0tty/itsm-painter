@@ -57,20 +57,14 @@ body {
 }
 
 .itsm-painter-logo-container {
-    padding: 3px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: white;
-    border-radius: 5px;
-    width: 28px;
-    height: 28px;
-    overflow: hidden;
 }
 
 .itsm-painter-logo-container > img {
-    width: 25px;
-    height: 25px;
+    width: 28px;
+    height: 28px;
     user-select: none;
     pointer-events: none;
 }
@@ -162,9 +156,10 @@ body {
 }
 
 .itsm-painter-info-logo-container > img {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     user-select: none;
+    pointer-events: none;
 }
 
 .itsm-painter-empty-spaces-caption {
