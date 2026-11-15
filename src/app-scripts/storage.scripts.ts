@@ -1,4 +1,4 @@
-import { ITSMPainterSettings } from "../app-resource/app-types";
+import { ITSMPainterSettings, ITSMPainterStateStorage } from "../app-resource/app-types";
 import { ITSMPainterConsts } from "../app-resource/app-consts";
 
 
@@ -16,12 +16,23 @@ export class StorageManager {
         });
     }
 
+    public loadFromStorage = async (syncStorage: boolean = false) => {
+        return (syncStorage ? chrome.storage.sync : chrome.storage.local).get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
+    }
+
+    public loadStateStorage = async (): Promise<{} | ITSMPainterStateStorage> => {
+        return await chrome.storage.local.get(ITSMPainterConsts.storageStateId).then(result => { return result[ITSMPainterConsts.storageStateId] });
+    }
+
+    public saveITSMPainterStateStorage = async (settingsObject: ITSMPainterStateStorage) => {
+        chrome.storage.local.set({ [ITSMPainterConsts.storageStateId]: settingsObject });
+    }
+
     public getITSMPainterSettings = async (): Promise<ITSMPainterSettings> => {
-        const data: any = await chrome.storage.local.get(ITSMPainterConsts.storageId).then(result => { return result[ITSMPainterConsts.storageId] });
+        const data: any = await this.loadFromStorage();
         if (!data) {
-            chrome.storage.local.set({ [ITSMPainterConsts.storageId]: this.getStorageTemplate() }).then(() => {
-                return this.getITSMPainterSettings();
-            });
+            await chrome.storage.local.set({ [ITSMPainterConsts.storageId]: await this.loadFromStorage(true) ?? this.getStorageTemplate() });
+            return await this.loadFromStorage() as ITSMPainterSettings;
         }
         return data as ITSMPainterSettings;
     }
@@ -84,6 +95,26 @@ export class StorageManager {
         const itsmPainterSettings = await this.getITSMPainterSettings();
         itsmPainterSettings.addons.darkMode = (document.getElementById('itsm-painter-dark-mode-state') as HTMLInputElement).checked;
         this.saveITSMPainterSettings(itsmPainterSettings);
+    }
+
+    public syncConfig = async () => {
+        try {
+            const settings = await this.getITSMPainterSettings();
+            await chrome.storage.sync.set({ [ITSMPainterConsts.storageId]: settings });
+            this.saveITSMPainterStateStorage({ lastSyncAt: Date.now() + 60000 });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            if (message.includes('QUOTA_BYTES')) {}
+            console.error(`Ошибка синхронизации: ${error}`);
+        }
+    }
+
+    public loadSyncConfig = async () => {
+        const settings = await this.loadFromStorage(true);
+        if (settings) {
+            this.saveITSMPainterSettings(settings as ITSMPainterSettings)
+        }
     }
 
 }

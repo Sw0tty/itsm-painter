@@ -1,5 +1,6 @@
 import { StorageManager } from "../app-scripts/storage.scripts";
 import { ITSMPainterConsts } from "../app-resource/app-consts";
+import { ITSMPainterStateStorage } from "../app-resource/app-types";
 
 
 const storageManager = new StorageManager();
@@ -8,7 +9,7 @@ storageManager.checkAndCreateNotExistSettings();
 
 const renderSpaces = async () => {
     const spaces = (await storageManager.getITSMPainterSettings())?.spaces;
-    document.getElementById('spacesContainer').innerHTML = spaces?.length > 0
+    document.getElementById('itsm-painter-spaces-container').innerHTML = spaces?.length > 0
         ?
         (await Promise.all(spaces.map(space => { return `<div class="itsm-painter-space-container"><div class="itsm-painter-space">${space}</div><div class="itsm-painter-remove-space-btn" data-space="${space}" title="Удалить"><img class="itsm-painter-remove-icon" /></div></div>` }))).join('')
         :
@@ -41,8 +42,15 @@ const checkSpace = async () => {
         if (currentTab) {
             const spaceUrl = new URL(currentTab.url);
             const domain = spaceUrl.hostname;
+            const btnsContainer = document.getElementById('itsm-painter-btns-container');
+            const removeBtn = btnsContainer.querySelector('#removeSpaceBtn');
+            const addBtn = btnsContainer.querySelector('#addSpaceBtn');
+            if (removeBtn || addBtn) {
+                removeBtn?.remove();
+                addBtn?.remove();
+            }
 
-            document.getElementById('itsm-painter-space-handler-btn-container').innerHTML = `
+            btnsContainer.insertAdjacentHTML('afterbegin', `
                 ${domain.includes(ITSMPainterConsts.workingDomain) ? `
                     ${(await storageManager.getITSMPainterSettings()).spaces.find(el => el === domain) && domain.includes(ITSMPainterConsts.workingDomain) ? `
                     <button id="removeSpaceBtn" class="itsm-painter-btn itsm-painter-delete-btn">Удалить текущее пространсто</button>
@@ -50,7 +58,7 @@ const checkSpace = async () => {
                     <button id="addSpaceBtn" class="itsm-painter-btn">Добавить текущее пространсто</button>
                     `}
                 ` : ''}
-            `;
+            `);
 
             document.getElementById('addSpaceBtn')?.addEventListener('click', async () => { storageManager.addSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
             document.getElementById('removeSpaceBtn')?.addEventListener('click', async () => { storageManager.removeSpace(domain).then(() => { renderSpaces(); checkSpace(); chrome.tabs.reload();}); });
@@ -58,7 +66,7 @@ const checkSpace = async () => {
     });
 }
 
-const addConstListeners = () => {
+const addConstListeners = async () => {
     document.getElementById('importConfig').addEventListener('click', async () => {
         try {
             const [fileHandle] = await window.showOpenFilePicker({
@@ -129,6 +137,24 @@ const addConstListeners = () => {
             }
             console.error("Export config error");
         }
+    });
+
+    const syncConfigBtn = document.getElementById('syncConfig');
+    const appStateStorage = await storageManager.loadStateStorage();
+    if (appStateStorage && (appStateStorage as ITSMPainterStateStorage).lastSyncAt >= Date.now()) {
+        syncConfigBtn.classList.add('disabled');
+    }
+    syncConfigBtn.addEventListener('click', async () => {
+        syncConfigBtn.classList.add('disabled');
+        storageManager.syncConfig();
+    });
+
+    const btnsContainer = document.getElementById('itsm-painter-btns-container');
+    btnsContainer.querySelector('#loadSyncConfig').addEventListener('click', () => {
+        storageManager.loadSyncConfig().then(() => {
+            chrome.tabs.reload();
+            renderSpaces();
+        });
     });
 
     document.getElementById('itsm-painter-info-modal-switch-btn').addEventListener('click', () => {

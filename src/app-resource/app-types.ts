@@ -1,5 +1,5 @@
 export type ITSMPainterSettings = {
-    teams: Team[],
+    teams: Team[];
     addons: Addons;
     spaces: string[];
 }
@@ -14,4 +14,8 @@ export type Team = {
 export type Addons = {
     keepRemind: boolean;
     darkMode: boolean;
+}
+
+export type ITSMPainterStateStorage = {
+    lastSyncAt: number;
 }

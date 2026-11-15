@@ -8,7 +8,7 @@ body {
     display: flex;
     margin: 3px;
     flex-direction: column;
-    width: 290px;
+    width: 300px;
     max-height: 300px;
     min-height: 300px;
     background: var(--bodySurface);
@@ -209,6 +209,11 @@ body {
     text-align: center;
     font-size: 16px;
     row-gap: 10px;
+}
+
+.disabled {
+    background-color: gray;
+    pointer-events: none;
 }
 
 @media (prefers-color-scheme: dark) {
