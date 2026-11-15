@@ -1,6 +1,7 @@
-<div align="center">
-  <h1 align="center">ITSMPainter</h1>
-</div>
+<h1 align="center">
+  <img src="./src/icons/logo/128.png" alt="Логотип" width="64" height="64" align="absmiddle">
+  ITSMPainter
+</h1>
 
 ### Built With
 
