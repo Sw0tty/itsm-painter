@@ -1,5 +1,5 @@
 import { StorageManager } from "../app-scripts/storage.scripts";
-import { ITSMPainterConsts } from "../app-resource/app-consts";
+import { ITSMPainterConsts, ITSMPainterElementsIds } from "../app-resource/app-consts";
 import { ITSMPainterStateStorage } from "../app-resource/app-types";
 
 
@@ -9,7 +9,7 @@ storageManager.checkAndCreateNotExistSettings();
 
 const renderSpaces = async () => {
     const spaces = (await storageManager.getITSMPainterSettings())?.spaces;
-    document.getElementById('itsm-painter-spaces-container').innerHTML = spaces?.length > 0
+    document.getElementById(ITSMPainterElementsIds.popupSpacesContainer).innerHTML = spaces?.length > 0
         ?
         (await Promise.all(spaces.map(space => { return `<div class="itsm-painter-space-container"><div class="itsm-painter-space">${space}</div><div class="itsm-painter-remove-space-btn" data-space="${space}" title="Удалить"><img class="itsm-painter-remove-icon" /></div></div>` }))).join('')
         :
@@ -42,7 +42,7 @@ const checkSpace = async () => {
         if (currentTab) {
             const spaceUrl = new URL(currentTab.url);
             const domain = spaceUrl.hostname;
-            const btnsContainer = document.getElementById('itsm-painter-btns-container');
+            const btnsContainer = document.getElementById(ITSMPainterElementsIds.popupBtnsContainer);
             const removeBtn = btnsContainer.querySelector('#removeSpaceBtn');
             const addBtn = btnsContainer.querySelector('#addSpaceBtn');
             if (removeBtn || addBtn) {
@@ -67,7 +67,7 @@ const checkSpace = async () => {
 }
 
 const addConstListeners = async () => {
-    document.getElementById('importConfig').addEventListener('click', async () => {
+    document.getElementById(ITSMPainterElementsIds.popupImportConfigBtn).addEventListener('click', async () => {
         try {
             const [fileHandle] = await window.showOpenFilePicker({
                 types: [
@@ -114,7 +114,7 @@ const addConstListeners = async () => {
         }
     });
 
-    document.getElementById('exportConfig').addEventListener('click', async () => {
+    document.getElementById(ITSMPainterElementsIds.popupExportConfigBtn).addEventListener('click', async () => {
         try {
             const fileHandle = await window.showSaveFilePicker({
                 suggestedName: "ITSMPainter-config.json",
@@ -139,7 +139,7 @@ const addConstListeners = async () => {
         }
     });
 
-    const syncConfigBtn = document.getElementById('syncConfig');
+    const syncConfigBtn = document.getElementById(ITSMPainterElementsIds.popupSyncConfigBtn);
     const appStateStorage = await storageManager.loadStateStorage();
     if (appStateStorage && (appStateStorage as ITSMPainterStateStorage).lastSyncAt >= Date.now()) {
         syncConfigBtn.classList.add('disabled');
@@ -149,20 +149,20 @@ const addConstListeners = async () => {
         storageManager.syncConfig();
     });
 
-    const btnsContainer = document.getElementById('itsm-painter-btns-container');
-    btnsContainer.querySelector('#loadSyncConfig').addEventListener('click', () => {
+    const btnsContainer = document.getElementById(ITSMPainterElementsIds.popupBtnsContainer);
+    btnsContainer.querySelector(`#${ITSMPainterElementsIds.popupLoadSynConfigBtn}`).addEventListener('click', () => {
         storageManager.loadSyncConfig().then(() => {
             chrome.tabs.reload();
             renderSpaces();
         });
     });
 
-    document.getElementById('itsm-painter-info-modal-switch-btn').addEventListener('click', () => {
-        document.getElementById('itsm-painter-info-modal-background').style.display = "flex";
+    document.getElementById(ITSMPainterElementsIds.popupInfoModalBtn).addEventListener('click', () => {
+        document.getElementById(ITSMPainterElementsIds.popupModal).style.display = "flex";
     });
 
-    document.getElementById('closeInfoModal').addEventListener('click', () => {
-        document.getElementById('itsm-painter-info-modal-background').style.display = "none";
+    document.getElementById(ITSMPainterElementsIds.popupCloseModalBtn).addEventListener('click', () => {
+        document.getElementById(ITSMPainterElementsIds.popupModal).style.display = "none";
     });
 }
 

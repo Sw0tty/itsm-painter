@@ -13,6 +13,7 @@ export type Team = {
 
 export type Addons = {
     keepRemind: boolean;
+    remindEach: number;
     darkMode: boolean;
 }
 

@@ -5,7 +5,7 @@ import { ITSMPainterConsts } from "../app-resource/app-consts";
 export class StorageManager {
 
     public getStorageTemplate = (): ITSMPainterSettings => {
-        return { teams: [], addons: { keepRemind: false, darkMode: false }, spaces: [] };
+        return { teams: [], addons: { keepRemind: false, remindEach: 10, darkMode: false }, spaces: [] };
     }
 
     public checkAndCreateNotExistSettings = async () => {
@@ -94,6 +94,12 @@ export class StorageManager {
     public switchDarkMode = async () => {
         const itsmPainterSettings = await this.getITSMPainterSettings();
         itsmPainterSettings.addons.darkMode = (document.getElementById('itsm-painter-dark-mode-state') as HTMLInputElement).checked;
+        this.saveITSMPainterSettings(itsmPainterSettings);
+    }
+
+    public saveRemindTime = async () => {
+        const itsmPainterSettings = await this.getITSMPainterSettings();
+        itsmPainterSettings.addons.remindEach = Number((document.getElementById('itsm-painter-update-reminder-state') as HTMLInputElement).value);
         this.saveITSMPainterSettings(itsmPainterSettings);
     }
 

@@ -3,24 +3,24 @@ import { ITSMPainterConsts } from "../app-resource/app-consts";
 import { AppScripts } from "./app.scripts";
 import { getStylesSet } from "../app-resource/styles-set";
 
+
 const storageManager = new StorageManager();
 
 const ITSMPainterObserverState = {
-    shortFormatTasksContainer: () => { return document.getElementsByClassName('grid-container')[0] },
-    fullFormatTasksContainer: () => { return document.getElementById('view_list_container')?.querySelector('div') },
+    isShortFormatTasksContainer: () => { return document.getElementsByClassName('grid-container')[0] },
+    isFullFormatTasksContainer: () => { return document.getElementById('view_list_container')?.querySelector('div') },
     tasksContainerObserver: undefined,
     updateTasksObserverIntervalId: undefined,
-    updateInterval: 60000 * 10
 }
 
-const addTasksContainerObserver = () => {
+const addTasksContainerObserver = async () => {
     const intervalId = window.setInterval(() => {
         checkDatagridElementsTarget();
-    }, ITSMPainterObserverState.updateInterval);
+    }, 60000 * (await storageManager.getITSMPainterSettings()).addons.remindEach);
     const tasksContainer = new MutationObserver(() => {
         checkDatagridElementsTarget();
     });
-    tasksContainer.observe(ITSMPainterObserverState?.shortFormatTasksContainer() ?? ITSMPainterObserverState?.fullFormatTasksContainer(), { childList: true });
+    tasksContainer.observe(ITSMPainterObserverState?.isShortFormatTasksContainer() ?? ITSMPainterObserverState?.isFullFormatTasksContainer(), { childList: true });
     ITSMPainterObserverState.tasksContainerObserver = tasksContainer;
     ITSMPainterObserverState.updateTasksObserverIntervalId = intervalId;
 }
@@ -29,7 +29,10 @@ const addIdsForFullStyle = async () => {
     const teams = document.getElementsByClassName('team');
     const ITSMPainterTeams = await storageManager.getITSMPainterTeams();
     for (let team of teams) {
-        team.id = `ITSMPainter-team-${ITSMPainterTeams.find(el => el.name === team.innerHTML).id}`;
+        const teamId = ITSMPainterTeams.find(el => el.name === team.innerHTML)?.id;
+        if (teamId) {
+            team.id = `ITSMPainter-team-${teamId}`;
+        }
     }
 }
 
@@ -126,6 +129,8 @@ const updateStylesSet = async () => {
 }
 
 const addITSMPainterHandlers = async () => {
+    const itsmPainterSettings = await storageManager.getITSMPainterSettings();
+
     document.getElementById('itsm-painter-add-team-btn').addEventListener('click', () => {
         let range = document.createRange();
         const teamId = new Date().getTime();
@@ -147,7 +152,6 @@ const addITSMPainterHandlers = async () => {
 
     document.getElementById('itsm-painter-auto-add-team-btn').addEventListener('click', async () => {
         const uniqueTeamsFromITSM = new Set([...document.querySelectorAll('.grid-row > .cell-team > span')].map(el => el.textContent));
-        const itsmPainterSettings = await storageManager.getITSMPainterSettings();
         const existingTeams = new Set(itsmPainterSettings.teams.map(el => el.name));
         const teamsDiff = uniqueTeamsFromITSM.difference(existingTeams);
         
@@ -177,13 +181,26 @@ const addITSMPainterHandlers = async () => {
         });
     });
 
+    const remindEachInput = document.getElementById('itsm-painter-update-reminder-state');
+    if (!itsmPainterSettings.addons?.remindEach) {
+        itsmPainterSettings.addons.remindEach = 10;
+        storageManager.saveITSMPainterSettings(itsmPainterSettings);
+    }
+    (remindEachInput as HTMLInputElement).value = String(itsmPainterSettings.addons.remindEach);
+    remindEachInput.addEventListener('change', async (event) => {
+        (event.target as HTMLInputElement).value = (event.target as HTMLInputElement).value.replace(/[^0-9]/g, '');
+        storageManager.saveRemindTime();
+    });
+
     document.getElementById('itsm-painter-dark-mode-state').addEventListener('click', () => {
         storageManager.switchDarkMode().then(() => updateStylesSet());
     });
 };
 
 const checkDatagridElementsTarget = () => {
-    for (let target of document.querySelectorAll('.cell-target')) {
+    const extraFullStyleClass = ITSMPainterObserverState.isFullFormatTasksContainer() ? 'itsm-painter-hot-status-full-style' : '';
+
+    for (let target of (ITSMPainterObserverState.isShortFormatTasksContainer() ? document.querySelectorAll('.cell-target') : document.querySelectorAll('.item .target'))) {
         const splittedTarget = target.querySelector('span').title.split(' ');
 
         if (splittedTarget.length === 4) {
@@ -199,19 +216,19 @@ const checkDatagridElementsTarget = () => {
             }
             if (days < 4 && days > 0) {
                 target.insertAdjacentHTML('beforebegin', `
-                    <div class="itsm-painter-hot-status itsm-painter-hot-status-days"><marquee class="itsm-painter-running-line">${days} ${days === 1 ? 'день' : 'дня'}</marquee></div>
+                    <div class="itsm-painter-hot-status itsm-painter-hot-status-days ${extraFullStyleClass}"><marquee class="itsm-painter-running-line">${days} ${days === 1 ? 'день' : 'дня'}</marquee></div>
                     `);
             } else if (days < 1 && hours > 1) {
                 target.insertAdjacentHTML('beforebegin', `
-                    <div class="itsm-painter-hot-status itsm-painter-hot-status-hours"><marquee class="itsm-painter-running-line">${hours} ${[1, 21].includes(hours) ? 'час' : [2, 3, 4, 23, 22].includes(hours) ? 'часа' : 'часов'}</marquee></div>
+                    <div class="itsm-painter-hot-status itsm-painter-hot-status-hours ${extraFullStyleClass}"><marquee class="itsm-painter-running-line">${hours} ${[1, 21].includes(hours) ? 'час' : [2, 3, 4, 23, 22].includes(hours) ? 'часа' : 'часов'}</marquee></div>
                     `);
             } else if (hours < 1 && minutes > 0) {
                 target.insertAdjacentHTML('beforebegin', `
-                    <div class="itsm-painter-hot-status itsm-painter-hot-status-minutes"><marquee class="itsm-painter-running-line">${minutes} ${(String(minutes).length === 2 && (Number(String(minutes)[1]) >= 5 || Number(String(minutes)[1]) === 0 || [11, 12, 13, 14].includes(minutes))) || (minutes > 4 && minutes < 10) ? 'минут' : (String(minutes).includes('1')) ? 'минута' : 'минуты'}</marquee></div>
+                    <div class="itsm-painter-hot-status itsm-painter-hot-status-minutes ${extraFullStyleClass}"><marquee class="itsm-painter-running-line">${minutes} ${(String(minutes).length === 2 && (Number(String(minutes)[1]) >= 5 || Number(String(minutes)[1]) === 0 || [11, 12, 13, 14].includes(minutes))) || (minutes > 4 && minutes < 10) ? 'минут' : (String(minutes).includes('1')) ? 'минута' : 'минуты'}</marquee></div>
                     `);
             } else if ((new Date(`${splittedTargetDate[2]}.${splittedTargetDate[1]}.${splittedTargetDate[0]} ${targetTime}`).getTime() - new Date().getTime()) < 0) {
                 target.insertAdjacentHTML('beforebegin', `
-                    <div class="itsm-painter-hot-status itsm-painter-hot-status-zero"><marquee class="itsm-painter-running-line">Просрочено</marquee></div>
+                    <div class="itsm-painter-hot-status itsm-painter-hot-status-zero ${extraFullStyleClass}"><marquee class="itsm-painter-running-line">Просрочено</marquee></div>
                     `);
             }
         }
@@ -253,6 +270,11 @@ const ITSMPainterBtnHandler = async () => {
                         <input id="itsm-painter-reminder-state" type="checkbox" ${(await storageManager.getITSMPainterSettings()).addons.keepRemind ? 'checked' : ''} />
                         <span>Включить напоминание</span>
                     </label>
+                    <label for="itsm-painter-update-reminder-state" class="itsm-painter-label">
+                        <span>Обновлять каждые</span>
+                        <input id="itsm-painter-update-reminder-state" class="itsm-painter-number-input" type="number" min="1" />
+                        <span>мин.</span>
+                    </label>
                     <label for="itsm-painter-dark-mode-state" class="itsm-painter-checkbox">
                         <input id="itsm-painter-dark-mode-state" type="checkbox" ${(await storageManager.getITSMPainterSettings()).addons.darkMode ? 'checked' : ''} />
                         <span>Темная тема</span>
@@ -284,7 +306,7 @@ const startExtensionJob = async () => {
             addITSMPainterHandlers();
         });
 
-        if (ITSMPainterObserverState?.fullFormatTasksContainer) {
+        if (ITSMPainterObserverState?.isFullFormatTasksContainer()) {
             addIdsForFullStyle();
         }
 

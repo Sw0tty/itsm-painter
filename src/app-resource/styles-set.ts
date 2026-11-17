@@ -112,7 +112,7 @@ export const getStylesSet = async (ITSMPainterSettings: ITSMPainterSettings) => 
             background: #a1d1ff;
         }
         
-        .grid-row {
+        .grid-row, .item {
             overflow: hidden;
             position: relative;
             z-index: 0;
@@ -278,6 +278,12 @@ export const getStylesSet = async (ITSMPainterSettings: ITSMPainterSettings) => 
             transform: rotate(330deg);
             text-shadow: 0 0 1px black;
         }
+        
+        .itsm-painter-hot-status-full-style {
+            width: 200px;
+            left: -30px;
+            top: -45px;
+        }
 
         .itsm-painter-hot-status-days {
             background: linear-gradient(179deg, #ffd653, transparent);
@@ -303,16 +309,30 @@ export const getStylesSet = async (ITSMPainterSettings: ITSMPainterSettings) => 
 
         .itsm-painter-running-line {
             opacity: 0.7;
+            height: 100%;
+            align-content: center;
         }
 
-        .itsm-painter-checkbox {
+        .itsm-painter-checkbox, .itsm-painter-label {
             display: flex;
             color: var(--color-on-surface);
             column-gap: 5px;
             text-wrap: nowrap;
             width: max-content;
             user-select: none;
+        }
+
+        .itsm-painter-checkbox {
             cursor: pointer;
+        }
+
+        .itsm-painter-number-input {
+            width: 50px;
+            border-radius: 3px;
+            border: 1px solid var(--color-border-surface);
+            padding: 3px;
+            color: var(--color-on-surface);
+            cursor: default;
         }
         
         .grid-row:hover {
