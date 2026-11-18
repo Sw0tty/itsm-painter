@@ -129,8 +129,6 @@ const updateStylesSet = async () => {
 }
 
 const addITSMPainterHandlers = async () => {
-    const itsmPainterSettings = await storageManager.getITSMPainterSettings();
-
     document.getElementById('itsm-painter-add-team-btn').addEventListener('click', () => {
         let range = document.createRange();
         const teamId = new Date().getTime();
@@ -151,6 +149,7 @@ const addITSMPainterHandlers = async () => {
     });
 
     document.getElementById('itsm-painter-auto-add-team-btn').addEventListener('click', async () => {
+        const itsmPainterSettings = await storageManager.getITSMPainterSettings();
         const uniqueTeamsFromITSM = new Set([...document.querySelectorAll('.grid-row > .cell-team > span')].map(el => el.textContent));
         const existingTeams = new Set(itsmPainterSettings.teams.map(el => el.name));
         const teamsDiff = uniqueTeamsFromITSM.difference(existingTeams);
@@ -182,6 +181,7 @@ const addITSMPainterHandlers = async () => {
     });
 
     const remindEachInput = document.getElementById('itsm-painter-update-reminder-state');
+    const itsmPainterSettings = await storageManager.getITSMPainterSettings();
     if (!itsmPainterSettings.addons?.remindEach) {
         itsmPainterSettings.addons.remindEach = 10;
         storageManager.saveITSMPainterSettings(itsmPainterSettings);
